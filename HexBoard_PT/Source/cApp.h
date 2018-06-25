@@ -5,13 +5,15 @@
 #pragma once
 
 #include "cParWnd.h"
+#include "cGameMaster.h"
 
 
 //--------------------------------------------------------------+
 class cAPP {
 private:
-	cPARWND* m_pParWnd;		
-
+	cPARWND* m_pParWnd;	
+	cGAME_MASTER* m_pGameMaster;
+	
    BOOL m_bWantWindowed;   
 
 public:

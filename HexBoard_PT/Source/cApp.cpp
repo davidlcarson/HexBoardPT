@@ -4,7 +4,6 @@
 
 #include "cApp.h"
 #include "MyResource.h"
-#include "cParWnd.h"
 #include "cGreetWnd.h"
 
 //local global
@@ -35,6 +34,7 @@ cAPP::cAPP(void)
 	sg_pApp = this;
 
    m_pParWnd = NULL;   
+   m_pGameMaster = NULL;
 
    //Start Debug and change to /bin
    #ifdef _DEBUG
@@ -58,14 +58,15 @@ cAPP::cAPP(void)
 cAPP::~cAPP(void)
 {  
 
-   CLEAN_DELETE(m_pParWnd);
+	CLEAN_DELETE(m_pGameMaster);
+	CLEAN_DELETE(m_pParWnd);
 
-   //kill the debug routines
-   debugsay(L"\nClosing main window\n");
+	//kill the debug routines
+	debugsay(L"\nClosing main window\n");
 
-   CloseDebug();
+	CloseDebug();
 
-   return;
+	return;
 }
 
 //Called from WinMain
@@ -130,9 +131,10 @@ void cAPP::CreateParentWindow(void)
       m_pParWnd->BlockSize(true);
    }
 
-   //debugsay(L"Parent Window Showing - Calling new cGAME_MASTER\n");
+	//debugsay(L"Parent Window Showing - Calling new cGAME_MASTER\n");
 
-   //Create GameMaster class here now that we have window
+	//Create GameMaster class here now that we have window
+	 m_pGameMaster = new cGAME_MASTER(m_pParWnd->GethWnd());
 
    //ParWnd has already painted.
    //Game Master won't be painted until its MapWnd is created.
@@ -228,7 +230,8 @@ LRESULT cAPP::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
       SaveDC(ps.hdc);
 
       //skip the event handler.
-
+	  if(m_pGameMaster)
+		m_pGameMaster->OnPaint();
      
       RestoreDC(ps.hdc, -1); //-1 means most recent
       EndPaint(hWnd, &ps);

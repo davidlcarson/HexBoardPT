@@ -24,6 +24,9 @@
     <ClCompile Include="Source\StarterApp_Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\cGameMaster.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\cApp.h">
@@ -38,6 +41,9 @@
     <ClInclude Include="Source\ProjDefs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\cGameMaster.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Source\Script1.rc">
@@ -45,7 +51,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="StarterAppStatus.txt" />
     <Text Include="bin\StarterApp_db.txt" />
+    <Text Include="HexBoard_PTStatus.txt" />
   </ItemGroup>
 </Project>
