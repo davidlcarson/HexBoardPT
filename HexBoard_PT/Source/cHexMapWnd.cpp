@@ -1,4 +1,6 @@
 //cHexMapWnd.cpp
+//Point Top Version
+//180625 : dc
 
 #include "cHexMapWnd.h"
 
@@ -12,14 +14,12 @@ static cHEX_MAP_WND* sg_pHexMapWnd = NULL;
 
 int cHEX_MAP_WND::m_nFieldSpacesWide = 0;
 int cHEX_MAP_WND::m_nFieldSpacesTall = 0;
+int cHEX_SPACE::m_nSpaceSize = 0;
 
 //colors of square
-COLORREF cHEX_SPACE::m_crStandardColor = RGB(210, 210, 210);
+COLORREF cHEX_SPACE::m_crStandardColor = RGB(220, 220, 220);
 COLORREF cHEX_SPACE::m_crHiliteColor = RGB(255, 255, 255);
 COLORREF cHEX_SPACE::m_crPenColor = RGB(0, 0, 0);
-
-//temp
-const int kSIZE = 12;
 
 //HexMap Child ID
 const int childID = 1958;
@@ -28,6 +28,7 @@ const int childID = 1958;
 cHEX_SPACE::cHEX_SPACE(void)
 {
 	m_bHilighted = FALSE;
+	m_nSpaceSize = 12;
 
 	return;
 }
@@ -63,51 +64,37 @@ void cHEX_SPACE::PaintSpace(HDC hdc)
 	SelectObject(hdc, hBrush);
 	SelectObject(hdc, hPen);
 
-	int sq3sz = (int)(SQRT3 * kSIZE);
+	int sq3sz = (int)(SQRT3 * m_nSpaceSize);
 	int sq3sz2 = sq3sz << 1;
 
+	//polygon version
+	POINT apts[6];
+	apts[0].x = m_sLocation.x;
+	apts[0].y = m_sLocation.y + m_nSpaceSize;
+	apts[1].x = m_sLocation.x + sq3sz;
+	apts[1].y = m_sLocation.y;
+	apts[2].x = m_sLocation.x + sq3sz2;
+	apts[2].y = m_sLocation.y + m_nSpaceSize;
+	apts[3].x = m_sLocation.x + sq3sz2;
+	apts[3].y = m_sLocation.y + (3 * m_nSpaceSize);
+	apts[4].x = m_sLocation.x + sq3sz;
+	apts[4].y = m_sLocation.y + (4 * m_nSpaceSize);
+	apts[5].x = m_sLocation.x;
+	apts[5].y = m_sLocation.y + (3 * m_nSpaceSize);
+
+	Polygon(hdc, apts, 6);
+
+#if 0 /// line version
 	//Draw one (pointy top) hex
-	MoveToEx(hdc, m_sLocation.x, m_sLocation.y + kSIZE, NULL);
+	MoveToEx(hdc, m_sLocation.x, m_sLocation.y + m_nSpaceSize, NULL);
 	LineTo(hdc, m_sLocation.x + sq3sz, m_sLocation.y);
-	LineTo(hdc, m_sLocation.x + sq3sz2, m_sLocation.y + kSIZE);
-	LineTo(hdc, m_sLocation.x + sq3sz2, m_sLocation.y + (3 * kSIZE));
-	LineTo(hdc, m_sLocation.x + sq3sz, m_sLocation.y + (4 * kSIZE));
-	LineTo(hdc, m_sLocation.x, m_sLocation.y + (3 * kSIZE));
-	LineTo(hdc, m_sLocation.x, m_sLocation.y + kSIZE);
-
-	//POINTS corner{ 0, 0 };
-	//int sz = 8;
-	//int sq3sz = (int)(SQRT3 * sz);
-
-#if 0 //pointy top
-	//Draw 3 rows of hexes
-	for (int i = 0; i < 3; i++) {
-
-		//Draw  one row of hexes
-		for (int i2 = 0; i2 < 5; i2++) {
-
-			//Draw one (pointy top) hex
-			MoveToEx(hdc, corner.x, corner.y + sz, NULL);
-			LineTo(hdc, corner.x + sq3sz, corner.y);
-			LineTo(hdc, corner.x + (sq3sz * 2), corner.y + sz);
-			LineTo(hdc, corner.x + (sq3sz * 2), corner.y + (3 * sz));
-			LineTo(hdc, corner.x + sq3sz, corner.y + (4 * sz));
-			LineTo(hdc, corner.x, corner.y + (3 * sz));
-			LineTo(hdc, corner.x, corner.y + sz);
-
-			//next hex in row ->
-			corner.x += sq3sz * 2;
-		}
-		//reset for next row ->
-
-		if (i % 2)
-			corner.x = 0;
-		else
-			corner.x = sq3sz;
-
-		corner.y = corner.y + (sz * 3);
-	}
+	LineTo(hdc, m_sLocation.x + sq3sz2, m_sLocation.y + m_nSpaceSize);
+	LineTo(hdc, m_sLocation.x + sq3sz2, m_sLocation.y + (3 * m_nSpaceSize));
+	LineTo(hdc, m_sLocation.x + sq3sz, m_sLocation.y + (4 * m_nSpaceSize));
+	LineTo(hdc, m_sLocation.x, m_sLocation.y + (3 * m_nSpaceSize));
+	LineTo(hdc, m_sLocation.x, m_sLocation.y + m_nSpaceSize);
 #endif
+
 #if 0
 	//poiny side
 	//Draw columns of hexes   
@@ -146,7 +133,7 @@ void cHEX_SPACE::PaintSpace(HDC hdc)
 
 /*****************************************************************************/
 /*****************************************************************************/
-cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int numSpacesWide, int numSpacesTall) : cCHILD_WND(hParent, childID)
+cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int numSpacesTall) : cCHILD_WND(hParent, childID)
 {
 	sg_pHexMapWnd = this;
 	m_pClassName = kHexWndClassName;
@@ -155,14 +142,18 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int numSpacesWide, int numSpacesTall) :
 	m_nFieldSpacesWide = numSpacesWide;
 	m_nFieldSpacesTall = numSpacesTall;
 
+	m_hBGBrush = CreateSolidBrush(RGB(190, 180, 100));
+
 	//Create an array of hexes spaces wide x s[aces tall
 	int numSquares = m_nFieldSpacesWide * m_nFieldSpacesTall;
 	m_apSpaces = new cHEX_SPACE*[numSquares];
 
 	//Create and Store Corners
 	int currentSpace = 0;
-	POINTS currentLocation{ 0, 0 };
-	int sq3sz =(int)( kSIZE * SQRT3);
+	//POINTS currentLocation{ 0, 0 };	
+	int sq3sz = (int)(spaceSize * SQRT3);
+
+	POINTS currentCorner = m_sMargin;
 
 	//Create array of hexes and init location
 	for (int i = 0; i < numSpacesTall; i++) {
@@ -170,20 +161,22 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int numSpacesWide, int numSpacesTall) :
 		//Draw  one row of hexes
 		for (int i2 = 0; i2 < numSpacesWide; i2++) {
 			m_apSpaces[currentSpace] = new cHEX_SPACE();
-			m_apSpaces[currentSpace]->SetLocation(currentLocation);
+			m_apSpaces[currentSpace]->SetLocation(currentCorner);
 			currentSpace++;
 			//next hex in row ->
-			currentLocation.x += (sq3sz << 1);
+			currentCorner.x += (sq3sz * 2);			
 		}
 		//reset for next row ->
 
 		if (i % 2)
-			currentLocation.x = 0;
+			currentCorner.x = m_sMargin.x;			
 		else
-			currentLocation.x = sq3sz;
-
-		currentLocation.y = currentLocation.y + (kSIZE * 3);
+			currentCorner.x = sq3sz + m_sMargin.x;
+			
+		currentCorner.y = currentCorner.y + (spaceSize * 3);		
 	}
+
+	m_apSpaces[0]->SetSpaceSize(spaceSize);
 
 	return;
 }
@@ -191,6 +184,8 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int numSpacesWide, int numSpacesTall) :
 /*****************************************************************************/
 cHEX_MAP_WND::~cHEX_MAP_WND(void)
 {
+	DeleteObject(m_hBGBrush);
+
 	int numSpaces = m_nFieldSpacesWide * m_nFieldSpacesTall;
 
 	//delete the instances
@@ -232,6 +227,28 @@ void cHEX_MAP_WND::fillWC(void)
 	return;
 }
 
+/*****************************************************************************/
+POINTS cHEX_MAP_WND::DesiredClient(void)
+{
+	POINTS retPt{ 0, 0 };
+
+	MYASSERT(m_apSpaces != NULL);
+	int spaceSize = m_apSpaces[0]->GetSpaceSize();
+	MYASSERT(spaceSize != NULL);
+
+	MYASSERT(m_nFieldSpacesWide != 0);
+
+	POINTS workingPt = m_apSpaces[m_nFieldSpacesWide - 1]->GetLocation();
+	workingPt.x += (SHORT) (SQRT3 * spaceSize * 3);
+	retPt.x = workingPt.x + m_sMargin.x;
+
+	workingPt = m_apSpaces[(m_nFieldSpacesTall  -1) * m_nFieldSpacesWide]->GetLocation();
+	workingPt.y += spaceSize * 4;
+	retPt.y = workingPt.y + m_sMargin.y;
+
+	return retPt;
+}
+
 //Called directly from GameMaster so it can paint armies on top
 /*****************************************************************************/
 void cHEX_MAP_WND::OnPaint(HDC hdc)
@@ -240,7 +257,7 @@ void cHEX_MAP_WND::OnPaint(HDC hdc)
 	RECT client;
 	GetClientRect(m_hChildWnd, &client);
 
-	SelectObject(hdc, GetStockObject(WHITE_BRUSH));
+	SelectObject(hdc, m_hBGBrush);
 	Rectangle(hdc, 0, 0, client.right, client.bottom);
 
 	int numSpaces = m_nFieldSpacesTall * m_nFieldSpacesWide;

@@ -48,5 +48,11 @@ enum eUSER_MESSSAGES {
    UM_STATUS_ENDMOVEMENT,  
 };
 
+// These will come from .ini and LevelData
+const int kNUM_SQUARES_WIDE = 7;
+const int kNUM_SQUARES_TALL = 14;
+const int kSPACE_SIZE = 14;
+
+
 #define SQRT3   1.73205080757
 #define SQRT3_2 3.46410161514

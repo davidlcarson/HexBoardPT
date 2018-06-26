@@ -10,7 +10,6 @@
 //#include "cStatusWnd.h"
 //#include "cArmy.h"
 
-//#include "cHexMapWnd.h"
 
 //static const int kNUM_ARMIES = 4;
 
@@ -29,7 +28,6 @@ private:
    HWND m_hParWnd;  //our parent wnd
    cHEX_MAP_WND* m_pHexMapWnd;
 
-   //cARENA_MAP_WND* m_pArenaWnd;
    //cSTATUS_WND* m_pStatusWnd;
 
    //int m_nMaxTurns;
@@ -49,6 +47,7 @@ private:
    //--- private methods ----_
    //void paintArmies(HDC hdc);
    void positionMap(void);
+   //POINTS calcClient();
 
 public:
    cGAME_MASTER(HWND hParWnd);

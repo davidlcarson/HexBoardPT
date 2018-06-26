@@ -3,8 +3,6 @@
 #include "cGameMaster.h"
 //#include "MyResource.h" //dialog box
 
-const int kNUM_SQUARES_WIDE = 6;
-const int kNUM_SQUARES_TALL = 4;
 //const eHEX_TYPE kHEX_TYPE = eHexPointSide;
 
 static cGAME_MASTER* sg_pGameMaster = NULL;
@@ -17,12 +15,14 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_hParWnd = hParentWnd;
 
    //Board size in spaces 
-   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, kNUM_SQUARES_WIDE, kNUM_SQUARES_TALL);
+   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, kSPACE_SIZE, kNUM_SQUARES_WIDE, kNUM_SQUARES_TALL);
 
    m_pHexMapWnd->RegisterChild();
 
    m_pHexMapWnd->CreateChild(WS_THICKFRAME, 320, 240);
-   SizeForClient(m_pHexMapWnd->GethWnd(), 320, 240);
+   //POINTS client = calcClient();
+   POINTS client = m_pHexMapWnd->DesiredClient();
+   SizeForClient(m_pHexMapWnd->GethWnd(), client.x, client.y);
    positionMap();
 
    m_pHexMapWnd->Show();
@@ -134,6 +134,33 @@ cGAME_MASTER::~cGAME_MASTER(void)
 
    return;
 }
+
+#if 0 //doesn't really work becasue of floats. Let Map tell us what size it wants
+/************************************************************************/
+POINTS cGAME_MASTER::calcClient(void)
+{	
+	//calc client size for Point Top Hexes
+	POINTS retPt{ 0, 0 };
+
+	//width
+	float width;
+
+	width = kNUM_SQUARES_WIDE * (kSPACE_SIZE * SQRT3_2);
+	width += kSPACE_SIZE * SQRT3;
+	//width += .5f;
+	retPt.x = (SHORT)width;
+
+	//height
+	float height;
+
+	height = kNUM_SQUARES_TALL * (kSPACE_SIZE * 3);
+	height += kSPACE_SIZE;
+	//height += .5f
+	retPt.y = (SHORT)height;
+
+	return retPt;
+}
+#endif
 
 /************************************************************************/
 void cGAME_MASTER::positionMap(void)
