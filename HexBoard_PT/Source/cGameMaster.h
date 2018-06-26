@@ -4,6 +4,7 @@
 
 #pragma once
 #include "ProjDefs.h"
+#include "cHexMapWnd.h"
 
 //#include "cArenaMapWnd.h"
 //#include "cStatusWnd.h"
@@ -26,7 +27,8 @@ RGB(255, 0, 255)
 class cGAME_MASTER {
 private:
    HWND m_hParWnd;  //our parent wnd
-   //cHEX_MAP_WND* m_pHexMapWnd;
+   cHEX_MAP_WND* m_pHexMapWnd;
+
    //cARENA_MAP_WND* m_pArenaWnd;
    //cSTATUS_WND* m_pStatusWnd;
 

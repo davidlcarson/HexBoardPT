@@ -132,12 +132,14 @@
     <ClCompile Include="Source\cApp.cpp" />
     <ClCompile Include="Source\cGameMaster.cpp" />
     <ClCompile Include="Source\cGreetWnd.cpp" />
+    <ClCompile Include="Source\cHexMapWnd.cpp" />
     <ClCompile Include="Source\StarterApp_Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\cApp.h" />
     <ClInclude Include="Source\cGameMaster.h" />
     <ClInclude Include="Source\cGreetWnd.h" />
+    <ClInclude Include="Source\cHexMapWnd.h" />
     <ClInclude Include="Source\MyResource.h" />
     <ClInclude Include="Source\ProjDefs.h" />
   </ItemGroup>

@@ -14,3 +14,8 @@ Created new solution: HexBoard_PT. Runs. Now has .git
 Added GameMaster to cAPP. Doesn't do much.
 
 Next: Create a child window of some random size that I can draw some PTHexes into.
+
+
+//// to do ////
+Make hex map wnd bg brush custom (currently WHITE_BRUSH)
+Make comment in cParWnd.cpp that fillWC might be in derived class!!!

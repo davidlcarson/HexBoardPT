@@ -17,6 +17,20 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    sg_pGameMaster = this;
 
    m_hParWnd = hParentWnd;
+
+   //Spaces wide and spaces tall currently unused
+   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, 10, 10);
+
+   m_pHexMapWnd->RegisterChild();
+
+   m_pHexMapWnd->CreateChild(WS_THICKFRAME, 320, 240);
+   SizeForClient(m_pHexMapWnd->GethWnd(), 320, 240);
+   positionMap();
+
+   m_pHexMapWnd->Show();
+   m_pHexMapWnd->SetBlockMove(TRUE);
+   m_pHexMapWnd->SetBlockReSize(TRUE);
+
 #if 0
    m_pSelectedLocation = NULL;
 
@@ -31,23 +45,6 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_nNumArmies = 0;
 #endif
    
-   //Create Map Wnd 'constant' spaces wide x 'constant' spaces tall 
-   //(See top of this module)
-#if 0
-   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, 1933, kNUM_SQUARES_WIDE, kNUM_SQUARES_TALL);
-
-   //POINTS clientSize = m_pHexMapWnd->GetClientSize();
-   //int squareSize = m_pHexMapWnd->GetSpaceSize();
-
-   m_pHexMapWnd->RegisterChild();
-
-   //re-size based on hex row/col
-   m_pHexMapWnd->CreateHexMapChild();
-   
-   m_pHexMapWnd->SizeHexForClient();
-
-   positionMap();
-#endif
 #if 0
    m_pStatusWnd = new cSTATUS_WND(hParentWnd, 1934);
    m_pStatusWnd->RegisterChild();
@@ -140,7 +137,6 @@ cGAME_MASTER::~cGAME_MASTER(void)
 /************************************************************************/
 void cGAME_MASTER::positionMap(void)
 {
-#if 0
    RECT parentClientRect;
    GetClientRect(GetParent(m_pHexMapWnd->GethWnd()), &parentClientRect);
    RECT mapWinRect;
@@ -149,7 +145,7 @@ void cGAME_MASTER::positionMap(void)
    int x = (parentClientRect.right - (mapWinRect.right - mapWinRect.left)) / 2;
    int y = (parentClientRect.bottom - (mapWinRect.bottom - mapWinRect.top)) / 4;
    SetWindowPos(m_pHexMapWnd->GethWnd(), HWND_TOP, x, y, 0, 0, SWP_NOSIZE);
-#endif
+
    return;
 }
 
