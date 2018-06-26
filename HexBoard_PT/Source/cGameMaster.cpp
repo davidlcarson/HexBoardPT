@@ -18,8 +18,8 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
 
    m_hParWnd = hParentWnd;
 
-   //Spaces wide and spaces tall currently unused
-   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, 10, 10);
+   //Board size in spaces 
+   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, 4, 3);
 
    m_pHexMapWnd->RegisterChild();
 
@@ -115,6 +115,9 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
 
    m_currentGameMode = eSelection;
 #endif
+   //Invalidate Parent will set chain of paints that
+   //..will paint the new MapWnd
+   InvalidateRect(m_hParWnd, NULL, FALSE);
    return;
 }
 
@@ -129,7 +132,7 @@ cGAME_MASTER::~cGAME_MASTER(void)
    CLEAN_DELETE(m_pStatusWnd);
 #endif
 
-   //CLEAN_DELETE(m_pHexMapWnd);
+   CLEAN_DELETE(m_pHexMapWnd);
 
    return;
 }
@@ -490,25 +493,31 @@ void cGAME_MASTER::OnPaint(void)
 
    //Players (actors) know nothing about their
    //..parent window, so we provide HDC
-#
-   //HDC hdc = GetDC(m_pHexMapWnd->GethWnd());
 
-   //m_pHexMapWnd->OnPaint(hdc);
+   HDC hdc = GetDC(m_pHexMapWnd->GethWnd());
+
+   m_pHexMapWnd->OnPaint(hdc);
 
    //paintArmies(hdc);
 
-   //ReleaseDC(m_pHexMapWnd->GethWnd(), hdc);
+   ReleaseDC(m_pHexMapWnd->GethWnd(), hdc);
 
    return;
 }
 
-//This is called from the cAPPLICATION EventHandler
+//This is called from the cAPPLICATION EventHandler to handle user messages
 /**********************************************************************************/
 LRESULT cGAME_MASTER::EventHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
    LRESULT lr = 0;
 
    switch (msg) {
+   case WM_PAINT:
+	   PAINTSTRUCT ps;
+	   BeginPaint(hWnd, &ps);
+	   EndPaint(hWnd, &ps);
+
+	   break;
 #if 0
    //arena sends us message when it receives an LBUTTONDOWN
    case UM_ARENA_LBUTTON_DOWN:
