@@ -1,12 +1,10 @@
 //cGameMaster.cpp
 
 #include "cGameMaster.h"
-//#include <math.h>  //sqrrt <-- do as define
-#include "MyResource.h" //dialog box
+//#include "MyResource.h" //dialog box
 
-//const int kMAX_TURNS = 12;
-const int kNUM_SQUARES_WIDE = 4;
-const int kNUM_SQUARES_TALL = 3;
+const int kNUM_SQUARES_WIDE = 6;
+const int kNUM_SQUARES_TALL = 4;
 //const eHEX_TYPE kHEX_TYPE = eHexPointSide;
 
 static cGAME_MASTER* sg_pGameMaster = NULL;
@@ -19,7 +17,7 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_hParWnd = hParentWnd;
 
    //Board size in spaces 
-   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, 4, 3);
+   m_pHexMapWnd = new cHEX_MAP_WND(hParentWnd, kNUM_SQUARES_WIDE, kNUM_SQUARES_TALL);
 
    m_pHexMapWnd->RegisterChild();
 

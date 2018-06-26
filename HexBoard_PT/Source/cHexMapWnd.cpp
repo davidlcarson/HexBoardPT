@@ -18,6 +18,9 @@ COLORREF cHEX_SPACE::m_crStandardColor = RGB(210, 210, 210);
 COLORREF cHEX_SPACE::m_crHiliteColor = RGB(255, 255, 255);
 COLORREF cHEX_SPACE::m_crPenColor = RGB(0, 0, 0);
 
+//temp
+const int kSIZE = 12;
+
 //HexMap Child ID
 const int childID = 1958;
 
@@ -60,11 +63,23 @@ void cHEX_SPACE::PaintSpace(HDC hdc)
 	SelectObject(hdc, hBrush);
 	SelectObject(hdc, hPen);
 
-	POINTS corner{ 0, 0 };
-	int sz = 8;
-	int sq3sz = (int)(SQRT3 * sz);
+	int sq3sz = (int)(SQRT3 * kSIZE);
+	int sq3sz2 = sq3sz << 1;
 
-#if 1 //pointy top
+	//Draw one (pointy top) hex
+	MoveToEx(hdc, m_sLocation.x, m_sLocation.y + kSIZE, NULL);
+	LineTo(hdc, m_sLocation.x + sq3sz, m_sLocation.y);
+	LineTo(hdc, m_sLocation.x + sq3sz2, m_sLocation.y + kSIZE);
+	LineTo(hdc, m_sLocation.x + sq3sz2, m_sLocation.y + (3 * kSIZE));
+	LineTo(hdc, m_sLocation.x + sq3sz, m_sLocation.y + (4 * kSIZE));
+	LineTo(hdc, m_sLocation.x, m_sLocation.y + (3 * kSIZE));
+	LineTo(hdc, m_sLocation.x, m_sLocation.y + kSIZE);
+
+	//POINTS corner{ 0, 0 };
+	//int sz = 8;
+	//int sq3sz = (int)(SQRT3 * sz);
+
+#if 0 //pointy top
 	//Draw 3 rows of hexes
 	for (int i = 0; i < 3; i++) {
 
@@ -92,8 +107,8 @@ void cHEX_SPACE::PaintSpace(HDC hdc)
 
 		corner.y = corner.y + (sz * 3);
 	}
-#else
-
+#endif
+#if 0
 	//poiny side
 	//Draw columns of hexes   
 	for (int i = 0; i < 3; i++) {
@@ -143,9 +158,32 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int numSpacesWide, int numSpacesTall) :
 	//Create an array of hexes spaces wide x s[aces tall
 	int numSquares = m_nFieldSpacesWide * m_nFieldSpacesTall;
 	m_apSpaces = new cHEX_SPACE*[numSquares];
-	for (int i = 0; i < numSquares; i++)
-		m_apSpaces[i] = new cHEX_SPACE();
 
+	//Create and Store Corners
+	int currentSpace = 0;
+	POINTS currentLocation{ 0, 0 };
+	int sq3sz =(int)( kSIZE * SQRT3);
+
+	//Create array of hexes and init location
+	for (int i = 0; i < numSpacesTall; i++) {
+
+		//Draw  one row of hexes
+		for (int i2 = 0; i2 < numSpacesWide; i2++) {
+			m_apSpaces[currentSpace] = new cHEX_SPACE();
+			m_apSpaces[currentSpace]->SetLocation(currentLocation);
+			currentSpace++;
+			//next hex in row ->
+			currentLocation.x += (sq3sz << 1);
+		}
+		//reset for next row ->
+
+		if (i % 2)
+			currentLocation.x = 0;
+		else
+			currentLocation.x = sq3sz;
+
+		currentLocation.y = currentLocation.y + (kSIZE * 3);
+	}
 
 	return;
 }
@@ -205,14 +243,10 @@ void cHEX_MAP_WND::OnPaint(HDC hdc)
 	SelectObject(hdc, GetStockObject(WHITE_BRUSH));
 	Rectangle(hdc, 0, 0, client.right, client.bottom);
 
-#if 0
 	int numSpaces = m_nFieldSpacesTall * m_nFieldSpacesWide;
 
 	for (int i = 0; i < numSpaces; i++)
 		m_apSpaces[i]->PaintSpace(hdc);
-#endif
-	//Paint the spaces
-	m_apSpaces[0]->PaintSpace(hdc);
 
 	return;
 }
