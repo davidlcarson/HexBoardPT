@@ -9,7 +9,7 @@
 //--------------------------------------------------------------+
 class cENTITY {
 private:
-	POINTS m_ptsLocation; //x, y col/row on map
+	POINTCR m_ptsLocation; //x, y col/row on map
 
 	//We don't own
 	//cHEX_SPACE* m_pCurrentSpace;
@@ -29,13 +29,13 @@ public:
 	~cENTITY(void);
 
 	//Following two are in col/row on map
-	void SetLocation(POINTS ptsLocation) { m_ptsLocation = ptsLocation; }
-	POINTS GetLocation(void) const { return m_ptsLocation; }
+	void SetLocation(POINTCR Location) { m_ptsLocation = Location; }
+	POINTCR GetLocation(void) const { return m_ptsLocation; }
 
 	//void SetVisible(BOOL b) { m_bVisible = b; }
 
 	//void SetActive(BOOL b) { m_bActive = b; }
 	//BOOL GetActive(void) { return m_bActive; }
 
-	void Paint(HDC hdc, POINTS hexCenter) const;
+	void Paint(HDC hdc, POINTXY hexCenter) const;
 };

@@ -13,7 +13,7 @@ private:
 	BOOL m_bHilighted;
 
 	//UpperLeft Corner in Screen Coords
-	POINTS m_ptsLocation;
+	POINTXY m_ptsLocation;
 
 	static int m_nSpaceSize;  //in pixels
 
@@ -29,9 +29,9 @@ public:
 	~cHEX_SPACE(void);
 
 	//Following 3 are in hexMap screen pixels
-	void SetLocation(POINTS ptsLocation) { m_ptsLocation = ptsLocation; }
-	POINTS GetLocation(void) const { return m_ptsLocation; }
-	POINTS GetCenterCoord(void) const;
+	void SetLocation(POINTXY ptsLocation) { m_ptsLocation = ptsLocation; }
+	POINTXY GetLocation(void) const { return m_ptsLocation; }
+	POINTXY GetCenterCoord(void) const;
 
 	void SetSpaceSize(int size) { m_nSpaceSize = size; }
 	static int GetSpaceSize(void) { return m_nSpaceSize; }
@@ -53,7 +53,7 @@ private:
 	static int m_nFieldSpacesTall;
 
 	//margin around spaces
-	POINTS m_sMargin{2, 2};
+	POINTXY m_sMargin{2, 2};
 
 	cHEX_SPACE** m_apSpaces;
 
@@ -62,16 +62,22 @@ private:
 
 	//-- private methods ----+
 	void fillWC(void);
+	int getSpaceIndex(POINTCR colRow) const;
 
 public:
 	cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int numSpacesTall);
 	~cHEX_MAP_WND(void);
 
 	//Tell someone what size client we'd like
-	POINTS DesiredClient(void) const;
+	POINTXY DesiredClient(void) const;
 
 	//Return center pixel coords of hex space at col/row on map
-	POINTS GetCenterCoord(POINTS colRow) const;
+	POINTXY GetCenterCoord(POINTS colRow) const;
+
+	//Two methods do get pSpace
+	cHEX_SPACE* GetpSpaceCR(POINTCR colRow) const;
+	cHEX_SPACE* GetpSpaceXY(SHORT x, SHORT y) const;
+	POINTCR GetCRFromXY(SHORT x, SHORT y) const;
 
 	void OnPaint(HDC hdc) const;
 

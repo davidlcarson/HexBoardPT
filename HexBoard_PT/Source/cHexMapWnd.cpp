@@ -43,7 +43,7 @@ cHEX_SPACE::~cHEX_SPACE(void)
 #if 0
 //upper-left corner this square in (parent client) pixels
 /****************************************************/
-void cHEX_SPACE::SetLocation(POINTS psLocation)
+void cHEX_SPACE::SetLocation(POINTXY psLocation)
 {
 	m_sLocation = psLocation;
 }
@@ -52,7 +52,6 @@ void cHEX_SPACE::SetLocation(POINTS psLocation)
 /****************************************************/
 void cHEX_SPACE::PaintSpace(HDC hdc) const
 {
-
 	HBRUSH hBrush;
 	HPEN hPen;
 
@@ -68,7 +67,7 @@ void cHEX_SPACE::PaintSpace(HDC hdc) const
 	SelectObject(hdc, hPen);
 
 	int sq3sz = (int)(SQRT3 * m_nSpaceSize);
-	int sq3sz2 = sq3sz << 1;
+	int sq3sz2 = sq3sz * 2;
 
 	//polygon version
 	POINT apts[6];
@@ -135,15 +134,15 @@ void cHEX_SPACE::PaintSpace(HDC hdc) const
 }
 
 /*****************************************************************************/
-POINTS cHEX_SPACE::GetCenterCoord(void) const
+POINTXY cHEX_SPACE::GetCenterCoord(void) const
 {
-	POINTS retValue;
+	POINTXY retValue;
 	float x = m_ptsLocation.x + (SQRT3 * m_nSpaceSize);
 	float y = m_ptsLocation.y + ( 2.0f * m_nSpaceSize);
 	retValue.x = (SHORT)x;
 	retValue.y = (SHORT)y;
 	
-	return (POINTS)retValue;
+	return (POINTXY)retValue;
 }
 
 /*****************************************************************************/
@@ -165,10 +164,10 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int n
 
 	//Create and Store Corners
 	int currentSpace = 0;
-	//POINTS currentLocation{ 0, 0 };	
+	//POINTXY currentLocation{ 0, 0 };	
 	int sq3sz = (int)(spaceSize * SQRT3);
 
-	POINTS currentCorner = m_sMargin;
+	POINTXY currentCorner = m_sMargin;
 
 	//Create array of hexes and init location
 	for (int i = 0; i < numSpacesTall; i++) {
@@ -242,25 +241,75 @@ void cHEX_MAP_WND::fillWC(void)
 	return;
 }
 
-/*****************************************************************************/
-POINTS cHEX_MAP_WND::GetCenterCoord(POINTS colRow) const
+//Helper funciton
+/******************************************************************************/
+int cHEX_MAP_WND::getSpaceIndex(POINTCR colRow) const
 {
-	int space;
+	int spaceIndex;
 	MYASSERT(colRow.x <= m_nFieldSpacesWide);
 	MYASSERT(colRow.y <= m_nFieldSpacesTall);
 
 	//Get space in array from col/Row
-	space = (colRow.y * m_nFieldSpacesWide) + colRow.x;
+	spaceIndex = (colRow.y * m_nFieldSpacesWide) + colRow.x;
 
-	POINTS retValue = m_apSpaces[space]->GetCenterCoord();
-
-	return retValue;
+	return spaceIndex;
 }
 
 /*****************************************************************************/
-POINTS cHEX_MAP_WND::DesiredClient(void) const
+POINTCR cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
+{	
+	SHORT col;
+	SHORT row;	
+
+	int size = m_apSpaces[0]->GetSpaceSize();	
+
+	//Get the Row (up/down) first since it will affect the column (<->)
+	//deduct top margin
+	row = y - m_sMargin.y;
+	row = row / (size * 3);
+
+	//now can do column <>
+	//Deduct margin from mouse x
+	col = x - m_sMargin.x;
+		
+	//if odd row, deduct 1/2 hex width from mouxe x
+	if (row % 2)
+		col -= (SHORT)(size * SQRT3);			
+	col = (SHORT)(col / (size * SQRT3_2));
+	
+	return POINTCR{ col, row };
+}
+
+/*****************************************************************************/
+cHEX_SPACE* cHEX_MAP_WND::GetpSpaceCR(POINTCR colRow) const
 {
-	POINTS retPt{ 0, 0 };
+	int spaceIndex = getSpaceIndex(colRow);
+	return m_apSpaces[spaceIndex];
+}
+
+//input is in pixels
+/*****************************************************************************/
+cHEX_SPACE* cHEX_MAP_WND::GetpSpaceXY(SHORT x, SHORT y) const
+{
+	cHEX_SPACE* pHexReturn = NULL;
+
+	POINTS cr = GetCRFromXY(x, y);
+	pHexReturn = GetpSpaceCR(cr);
+
+	return pHexReturn;
+}
+
+/*****************************************************************************/
+POINTXY cHEX_MAP_WND::GetCenterCoord(POINTS colRow) const
+{
+	
+	return GetpSpaceCR(colRow)->GetCenterCoord();
+}
+
+/*****************************************************************************/
+POINTXY cHEX_MAP_WND::DesiredClient(void) const
+{
+	POINTXY retPt{ 0, 0 };
 
 	MYASSERT(m_apSpaces != NULL);
 	int spaceSize = m_apSpaces[0]->GetSpaceSize();
@@ -268,7 +317,7 @@ POINTS cHEX_MAP_WND::DesiredClient(void) const
 
 	MYASSERT(m_nFieldSpacesWide != 0);
 
-	POINTS workingPt = (POINTS)m_apSpaces[m_nFieldSpacesWide - 1]->GetLocation();
+	POINTXY workingPt = (POINTXY)m_apSpaces[m_nFieldSpacesWide - 1]->GetLocation();
 	workingPt.x += (SHORT) (SQRT3 * spaceSize * 3);
 	retPt.x = workingPt.x + m_sMargin.x;
 
@@ -318,8 +367,11 @@ LRESULT cHEX_MAP_WND::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPAR
 	break;
 
 	case WM_LBUTTONDOWN:
+	{
+		HWND hParent = GetParent(hWnd);
 		//Let GameMaster handle this
-		SendMessage(GetParent(hWnd), UM_ARENA_LBUTTON_DOWN, wParam, lParam);
+		SendMessage(hParent, UM_MAPWND_LBUTTON_DOWN, wParam, lParam);
+	}
 		break;
 
 	case WM_MOUSEMOVE:
@@ -328,7 +380,8 @@ LRESULT cHEX_MAP_WND::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPAR
 		SHORT y;
 		x = GET_X_LPARAM(lParam);
 		y = GET_Y_LPARAM(lParam);
-		SendMessage(GetParent(hWnd), UM_ARENA_MOUSEMOVE, wParam, lParam);
+
+		SendMessage(GetParent(hWnd), UM_MAPWND_MOUSEMOVE, wParam, lParam);
 	}
 	break;
 

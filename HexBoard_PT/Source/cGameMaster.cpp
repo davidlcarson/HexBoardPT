@@ -20,8 +20,8 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_pHexMapWnd->RegisterChild();
 
    m_pHexMapWnd->CreateChild(WS_THICKFRAME, 320, 240);
-   //POINTS client = calcClient();
-   POINTS client = m_pHexMapWnd->DesiredClient();
+   
+   POINTXY client = m_pHexMapWnd->DesiredClient();
    SizeForClient(m_pHexMapWnd->GethWnd(), client.x, client.y);
    positionMap();
 
@@ -33,7 +33,7 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    //Create the 1 Entity
    m_pEntity = new cENTITY();
    //Set its location (col, row)
-   m_pEntity->SetLocation(POINTS{ 4, 2 });
+   m_pEntity->SetLocation(POINTCR{ 4, 2 });
 
 #if 0
    m_pSelectedLocation = NULL;
@@ -144,10 +144,10 @@ cGAME_MASTER::~cGAME_MASTER(void)
 
 #if 0 //doesn't really work becasue of floats. Let Map tell us what size it wants
 /************************************************************************/
-POINTS cGAME_MASTER::calcClient(void)
+POINTXT cGAME_MASTER::calcClient(void)
 {	
 	//calc client size for Point Top Hexes
-	POINTS retPt{ 0, 0 };
+	POINTXY retPt{ 0, 0 };
 
 	//width
 	float width;
@@ -184,10 +184,9 @@ void cGAME_MASTER::positionMap(void)
    return;
 }
 
-#if 0
 //Left Button went down in arena
 /**************************************************/
-BOOL cGAME_MASTER::OnArenaLButtonDown(SHORT x, SHORT y)
+void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
 {
    /*
    X and Y are in field client coordinates.
@@ -195,11 +194,20 @@ BOOL cGAME_MASTER::OnArenaLButtonDown(SHORT x, SHORT y)
    Then get pSquare and info. Go from there
 
    Return (bool) Do we need repaint?
-   */
-   
-   //Indicat 'Need Repaint"
-   BOOL bRetValue = FALSE;   
+   */   
 
+   //-- Move single entity to space clicked into --+
+
+   //get space clicked on
+   POINTCR cr = m_pHexMapWnd->GetCRFromXY(x, y);
+
+   //Set entinty location to this hex.
+   m_pEntity->SetLocation(cr);
+
+   //Redraw map and entity
+   InvalidateRect(m_hParWnd, NULL, FALSE);
+
+#if 0
    switch (m_currentGameMode) {
    case eSelection:
    {
@@ -284,10 +292,11 @@ BOOL cGAME_MASTER::OnArenaLButtonDown(SHORT x, SHORT y)
       break;
 
    }// end 'switch current mode'
+#endif //0
 
-   return bRetValue;
+   return;
 }
-#endif
+
 
 #if 0
 /***********************************************************************/
@@ -335,9 +344,9 @@ BOOL cGAME_MASTER::OnArenaMouseMove(SHORT x, SHORT y)
 
       //2. Calc distance from current occupied square
       //Get Center of m_pSelectedLocation
-      POINTS pt1 = m_pSelectedLocation->GetCenterCoord();
+      POINTXY pt1 = m_pSelectedLocation->GetCenterCoord();
       //Get Center of potentialSquare
-      POINTS pt2 = pSquare->GetCenterCoord();
+      POINTXY pt2 = pSquare->GetCenterCoord();
      
       //Calc distance
       int d1 = abs(pt1.x - pt2.x);
@@ -408,7 +417,7 @@ void cGAME_MASTER::ProcessCombat(void)
 
       pOurActor = pOurArmy->GetpActor(i);
       pOurSquare = pOurActor->GetpLocation();
-      POINTS ourCenter = pOurSquare->GetCenterCoord();
+      POINTXY ourCenter = pOurSquare->GetCenterCoord();
 
       cARMY * pCurrentEnemyArmy;
       for (int i2 = 0; i2 < m_nNumArmies; i2++) {
@@ -428,8 +437,8 @@ void cGAME_MASTER::ProcessCombat(void)
 
             //Get distance between us
             
-            POINTS enemyLocation = pEnemySquare->GetCenterCoord();
-            POINTS rc = m_pArenaWnd->PixToRowCol(enemyLocation);
+            POINTXY enemyLocation = pEnemySquare->GetCenterCoord();
+            POINTCR rc = m_pArenaWnd->PixToRowCol(enemyLocation);
 
             int xOffset = abs(ourCenter.x - rc.x);
             int yOffset = abs(ourCenter.y - rc.y);
@@ -534,7 +543,7 @@ void cGAME_MASTER::OnPaint(void)
    //paint the entity
 
    if (m_pEntity) {
-	   POINTS hexCenter; //in pixels
+	   POINTXY hexCenter; //in pixels
 	   hexCenter = m_pHexMapWnd->GetCenterCoord(m_pEntity->GetLocation());
 
 	   m_pEntity->Paint(hdc, hexCenter);
@@ -560,13 +569,16 @@ LRESULT cGAME_MASTER::EventHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 	   EndPaint(hWnd, &ps);
 
 	   break;
+
 #if 0
    //arena sends us message when it receives an LBUTTONDOWN
-   case UM_ARENA_LBUTTON_DOWN:
+   case UM_MAPWND_LBUTTON_DOWN:
       {
       //Send Pixel Coordinates!!!
       SHORT x = GET_X_LPARAM(lParam);
       SHORT y = GET_Y_LPARAM(lParam);
+
+	  OnMapWndLButtonDown(x, y);
 
       /*
       Send the x/y client coordinates of the mouse to OUR OnArenaLButtonDown routine.
@@ -579,10 +591,14 @@ LRESULT cGAME_MASTER::EventHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
             m_currentGameMode = eSelection;
          }
       }
-      }
-      break;
 
-   case UM_ARENA_MOUSEMOVE:
+      }
+
+      break;
+#endif
+
+#if 0
+   case UM_MAPWND_MOUSEMOVE:
       {
       //Send Pixel Coordinates!!!
       SHORT x = GET_X_LPARAM(lParam);

@@ -8,7 +8,7 @@ COLORREF cENTITY::m_FillColor = RGB(255, 255, 255);
 /*****************************************************/
 cENTITY::cENTITY(eENTITY_TYPE eType)
 {
-	//m_sLocation = POINTS{ 0, 0 };
+	//m_sLocation = POINTXY{ 0, 0 };
 
 	//m_pCurrentSpace = NULL;
 	//m_eEntityType = eType;
@@ -27,7 +27,7 @@ cENTITY::~cENTITY(void)
 }
 
 /*****************************************************/
-void cENTITY::Paint(HDC hdc, POINTS hexCenter) const
+void cENTITY::Paint(HDC hdc, POINTXY hexCenter) const
 {
 	//receives: hexCenter in pixels
 	int size = kSPACE_SIZE;
@@ -35,7 +35,7 @@ void cENTITY::Paint(HDC hdc, POINTS hexCenter) const
 	//if(m_bVisible)
 		//if(m_bActive)
 			//if (m_pCurrentSpace != 0) {
-				//POINTS center = m_pCurrentSpace->GetCenterCoord();
+				//POINTXY center = m_pCurrentSpace->GetCenterCoord();
 				HBRUSH fillBrush = CreateSolidBrush(m_FillColor);
 				HPEN pen = CreatePen(PS_SOLID, 2, m_PenColor);
 

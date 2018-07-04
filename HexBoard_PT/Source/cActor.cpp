@@ -41,7 +41,7 @@ void cACTOR::Paint(HDC hdc)
    if (m_pHexLocation == NULL)
       return;
 
-   POINTS center = m_pHexLocation->GetCenterCoord();
+   POINTXY center = m_pHexLocation->GetCenterCoord();
    HBRUSH hBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);   
 
    SelectObject(hdc, hBrush);

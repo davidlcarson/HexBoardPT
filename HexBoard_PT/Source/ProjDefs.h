@@ -7,6 +7,9 @@
 
 #include "Globdefs.h"
 
+#define POINTCR POINTS
+#define POINTXY POINTS
+
 enum GAME_MODE {
    eInitializing,
    eSelection,
@@ -51,8 +54,8 @@ struct ACTOR_INFO {
 //..in the GenLib project
 
 enum eUSER_MESSSAGES {
-   UM_ARENA_LBUTTON_DOWN = WM_USER + 1,  //(1025)
-   UM_ARENA_MOUSEMOVE,
+   UM_MAPWND_LBUTTON_DOWN = WM_USER + 1,  //(1025)
+   UM_MAPWND_MOUSEMOVE,
    UM_STATUS_ENDMOVEMENT,  
 };
 
