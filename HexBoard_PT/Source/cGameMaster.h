@@ -5,6 +5,7 @@
 #pragma once
 #include "ProjDefs.h"
 #include "cHexMapWnd.h"
+#include "cEntity.h"
 
 //#include "cArenaMapWnd.h"
 //#include "cStatusWnd.h"
@@ -27,6 +28,8 @@ class cGAME_MASTER {
 private:
    HWND m_hParWnd;  //our parent wnd
    cHEX_MAP_WND* m_pHexMapWnd;
+
+   cENTITY* m_pEntity;
 
    //cSTATUS_WND* m_pStatusWnd;
 

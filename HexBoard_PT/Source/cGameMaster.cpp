@@ -29,6 +29,12 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_pHexMapWnd->SetBlockMove(TRUE);
    m_pHexMapWnd->SetBlockReSize(TRUE);
 
+
+   //Create the 1 Entity
+   m_pEntity = new cENTITY();
+   //Set its location (col, row)
+   m_pEntity->SetLocation(POINTS{ 4, 2 });
+
 #if 0
    m_pSelectedLocation = NULL;
 
@@ -130,6 +136,7 @@ cGAME_MASTER::~cGAME_MASTER(void)
    CLEAN_DELETE(m_pStatusWnd);
 #endif
 
+   CLEAN_DELETE(m_pEntity);
    CLEAN_DELETE(m_pHexMapWnd);
 
    return;
@@ -521,7 +528,17 @@ void cGAME_MASTER::OnPaint(void)
 
    HDC hdc = GetDC(m_pHexMapWnd->GethWnd());
 
+   //Paint the board
    m_pHexMapWnd->OnPaint(hdc);
+
+   //paint the entity
+
+   if (m_pEntity) {
+	   POINTS hexCenter; //in pixels
+	   hexCenter = m_pHexMapWnd->GetCenterCoord(m_pEntity->GetLocation());
+
+	   m_pEntity->Paint(hdc, hexCenter);
+   }
 
    //paintArmies(hdc);
 

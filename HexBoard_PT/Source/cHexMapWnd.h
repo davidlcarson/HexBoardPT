@@ -6,7 +6,6 @@
 #include "ProjDefs.h"
 #include "cParWnd.h"
 
-
 //Default Point Top Hex
 //------------------------------------------------------+
 class cHEX_SPACE {
@@ -14,7 +13,7 @@ private:
 	BOOL m_bHilighted;
 
 	//UpperLeft Corner in Screen Coords
-	POINTS m_sLocation;
+	POINTS m_ptsLocation;
 
 	static int m_nSpaceSize;  //in pixels
 
@@ -29,22 +28,21 @@ public:
 	cHEX_SPACE(void);
 	~cHEX_SPACE(void);
 
-	//Set the corner of the square in client pixels
-	void SetLocation(POINTS pLocation);
-	POINTS GetLocation(void) { return m_sLocation; }
+	//Following 3 are in hexMap screen pixels
+	void SetLocation(POINTS ptsLocation) { m_ptsLocation = ptsLocation; }
+	POINTS GetLocation(void) const { return m_ptsLocation; }
+	POINTS GetCenterCoord(void) const;
 
 	void SetSpaceSize(int size) { m_nSpaceSize = size; }
 	static int GetSpaceSize(void) { return m_nSpaceSize; }
 
-	void SetHilighted(BOOL b) { m_bHilighted = b; }
-
-	POINTS GetCenterCoord(void);
+	void SetHilighted(BOOL b) { m_bHilighted = b; }	
 
 	//Each square contains an ACTOR_INFO structure
 	//void SetActorInfo(ACTOR_INFO ai) { m_stActorInfo = ai; }
 	//ACTOR_INFO GetActorInfo(void) { return m_stActorInfo; }
 
-	void PaintSpace(HDC hdc);
+	void PaintSpace(HDC hdc) const;
 };
 
 //-----------------------------------------------------+
@@ -70,9 +68,12 @@ public:
 	~cHEX_MAP_WND(void);
 
 	//Tell someone what size client we'd like
-	POINTS DesiredClient(void);
+	POINTS DesiredClient(void) const;
 
-	void OnPaint(HDC hdc);
+	//Return center pixel coords of hex space at col/row on map
+	POINTS GetCenterCoord(POINTS colRow) const;
+
+	void OnPaint(HDC hdc) const;
 
 	LRESULT EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam);
 };

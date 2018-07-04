@@ -1,21 +1,29 @@
 //Starter App Status
 
-180625 : App and Genlib in solution.
-Directories set in properties.
-Compiles - no warnings, Runs. Parent Window. No leaks.
-
-Added Temp/ to git ignore.
-Added bin/ to git ignore 
-
->> Saved the two projects as templates.
-Created new solution: HexBoard_PT. Runs. Now has .git
-
-180625:
-Added GameMaster to cAPP. Doesn't do much.
-
-Next: Create a child window of some random size that I can draw some PTHexes into.
+180627: Draws child window with hexes and a client size that fits.
 
 
-//// to do ////
-Make hex map wnd bg brush custom (currently WHITE_BRUSH)
-Make comment in cParWnd.cpp that fillWC might be in derived class!!!
+[ ] Draw an entity at some set location (Row/col)
+	[x] Generic entity: Just draws filled rectangle
+
+	[x] Create entity and set its location
+				
+	[x] Call paint on entity (hdc, pixel center)
+		[ ] row/col to pixel center handeld by GameMaster: call to hex map?
+		
+
+
+
+Now: Add army
+	Start with simple entity
+		? Entity needs pointer to hexspace it occupies... Who provides?  Where?
+			(Think ahead to armies and arrays of entities)
+			> Look at cARMY class and see how i did it (VIA ACTOR_INFO?)
+
+
+			cAPP
+			|_cGAME_MASTER
+				|_cHEX_BOARD
+				|	|_cHEX_SPACE
+				|
+				|_cENTITY

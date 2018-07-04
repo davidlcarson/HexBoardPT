@@ -29,7 +29,15 @@ enum eACTOR_TYPE {
    eFANTASY
 };
 
-//actor info structure
+enum eENTITY_TYPE {
+	eEntity_Unknown = -1,
+	eProp,
+	eSetpiece,
+	eActor
+};
+
+//actor info structure -
+//..one in each gameboard space 
 struct ACTOR_INFO {
    //army number (0-3)
    eARMY eArmy;
@@ -54,5 +62,5 @@ const int kNUM_SQUARES_TALL = 14;
 const int kSPACE_SIZE = 14;
 
 
-#define SQRT3   1.73205080757
-#define SQRT3_2 3.46410161514
+#define SQRT3   1.73205080757f
+#define SQRT3_2 3.46410161514f

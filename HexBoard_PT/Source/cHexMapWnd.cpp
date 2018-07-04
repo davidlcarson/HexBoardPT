@@ -3,6 +3,7 @@
 //180625 : dc
 
 #include "cHexMapWnd.h"
+#include "DebugRoutines.h"
 
 const wchar_t* kHexWndClassName = L"HexWndClass";
 
@@ -39,15 +40,17 @@ cHEX_SPACE::~cHEX_SPACE(void)
 
 }
 
+#if 0
 //upper-left corner this square in (parent client) pixels
 /****************************************************/
 void cHEX_SPACE::SetLocation(POINTS psLocation)
 {
 	m_sLocation = psLocation;
 }
+#endif
 
 /****************************************************/
-void cHEX_SPACE::PaintSpace(HDC hdc)
+void cHEX_SPACE::PaintSpace(HDC hdc) const
 {
 
 	HBRUSH hBrush;
@@ -69,18 +72,18 @@ void cHEX_SPACE::PaintSpace(HDC hdc)
 
 	//polygon version
 	POINT apts[6];
-	apts[0].x = m_sLocation.x;
-	apts[0].y = m_sLocation.y + m_nSpaceSize;
-	apts[1].x = m_sLocation.x + sq3sz;
-	apts[1].y = m_sLocation.y;
-	apts[2].x = m_sLocation.x + sq3sz2;
-	apts[2].y = m_sLocation.y + m_nSpaceSize;
-	apts[3].x = m_sLocation.x + sq3sz2;
-	apts[3].y = m_sLocation.y + (3 * m_nSpaceSize);
-	apts[4].x = m_sLocation.x + sq3sz;
-	apts[4].y = m_sLocation.y + (4 * m_nSpaceSize);
-	apts[5].x = m_sLocation.x;
-	apts[5].y = m_sLocation.y + (3 * m_nSpaceSize);
+	apts[0].x = m_ptsLocation.x;
+	apts[0].y = m_ptsLocation.y + m_nSpaceSize;
+	apts[1].x = m_ptsLocation.x + sq3sz;
+	apts[1].y = m_ptsLocation.y;
+	apts[2].x = m_ptsLocation.x + sq3sz2;
+	apts[2].y = m_ptsLocation.y + m_nSpaceSize;
+	apts[3].x = m_ptsLocation.x + sq3sz2;
+	apts[3].y = m_ptsLocation.y + (3 * m_nSpaceSize);
+	apts[4].x = m_ptsLocation.x + sq3sz;
+	apts[4].y = m_ptsLocation.y + (4 * m_nSpaceSize);
+	apts[5].x = m_ptsLocation.x;
+	apts[5].y = m_ptsLocation.y + (3 * m_nSpaceSize);
 
 	Polygon(hdc, apts, 6);
 
@@ -129,6 +132,18 @@ void cHEX_SPACE::PaintSpace(HDC hdc)
 	DeleteObject(hPen);
 
 	return;
+}
+
+/*****************************************************************************/
+POINTS cHEX_SPACE::GetCenterCoord(void) const
+{
+	POINTS retValue;
+	float x = m_ptsLocation.x + (SQRT3 * m_nSpaceSize);
+	float y = m_ptsLocation.y + ( 2.0f * m_nSpaceSize);
+	retValue.x = (SHORT)x;
+	retValue.y = (SHORT)y;
+	
+	return (POINTS)retValue;
 }
 
 /*****************************************************************************/
@@ -228,7 +243,22 @@ void cHEX_MAP_WND::fillWC(void)
 }
 
 /*****************************************************************************/
-POINTS cHEX_MAP_WND::DesiredClient(void)
+POINTS cHEX_MAP_WND::GetCenterCoord(POINTS colRow) const
+{
+	int space;
+	MYASSERT(colRow.x <= m_nFieldSpacesWide);
+	MYASSERT(colRow.y <= m_nFieldSpacesTall);
+
+	//Get space in array from col/Row
+	space = (colRow.y * m_nFieldSpacesWide) + colRow.x;
+
+	POINTS retValue = m_apSpaces[space]->GetCenterCoord();
+
+	return retValue;
+}
+
+/*****************************************************************************/
+POINTS cHEX_MAP_WND::DesiredClient(void) const
 {
 	POINTS retPt{ 0, 0 };
 
@@ -238,7 +268,7 @@ POINTS cHEX_MAP_WND::DesiredClient(void)
 
 	MYASSERT(m_nFieldSpacesWide != 0);
 
-	POINTS workingPt = m_apSpaces[m_nFieldSpacesWide - 1]->GetLocation();
+	POINTS workingPt = (POINTS)m_apSpaces[m_nFieldSpacesWide - 1]->GetLocation();
 	workingPt.x += (SHORT) (SQRT3 * spaceSize * 3);
 	retPt.x = workingPt.x + m_sMargin.x;
 
@@ -251,7 +281,7 @@ POINTS cHEX_MAP_WND::DesiredClient(void)
 
 //Called directly from GameMaster so it can paint armies on top
 /*****************************************************************************/
-void cHEX_MAP_WND::OnPaint(HDC hdc)
+void cHEX_MAP_WND::OnPaint(HDC hdc) const
 {
 	//Clear the child window
 	RECT client;
