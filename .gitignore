@@ -8,6 +8,14 @@
 *.sln.docstates
 *.tlog
 
+#mine
+HexBoard_PT\Textures\*
+HexBoard_PT\Temp\*
+GenLib\Lib\*
+GenLib\Temp\*
+*.bmp
+
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

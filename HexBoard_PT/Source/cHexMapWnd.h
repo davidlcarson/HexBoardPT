@@ -15,7 +15,10 @@ private:
 	//UpperLeft Corner in Screen Coords
 	POINTXY m_ptsLocation;
 
-	static int m_nSpaceSize;  //in pixels
+	//size of hex elements
+	static SHORT m_spaceHalfWide;
+	static SHORT m_spaceQuarterTall;
+	//static int m_nSpaceSize;  //in pixels
 
 	//colors of space
 	static COLORREF m_crStandardColor;
@@ -33,8 +36,11 @@ public:
 	POINTXY GetLocation(void) const { return m_ptsLocation; }
 	POINTXY GetCenterCoord(void) const;
 
-	void SetSpaceSize(int size) { m_nSpaceSize = size; }
-	static int GetSpaceSize(void) { return m_nSpaceSize; }
+	void SetSpaceSize(int size); // { m_nSpaceSize = size; }	
+
+	//static int GetSpaceSize(void) { return m_nSpaceSize; }
+	SHORT GetSpaceHalfWide(void) { return m_spaceHalfWide; }
+	SHORT GetSpaceQuarterTall(void) { return m_spaceQuarterTall; }
 
 	void SetHilighted(BOOL b) { m_bHilighted = b; }	
 
@@ -52,6 +58,9 @@ private:
 	static int m_nFieldSpacesWide;
 	static int m_nFieldSpacesTall;
 
+	POINTXY m_ptxyMouseMapSize;
+	unsigned char* m_pMouseMapIndices;
+
 	//margin around spaces
 	POINTXY m_sMargin{2, 2};
 
@@ -63,6 +72,8 @@ private:
 	//-- private methods ----+
 	void fillWC(void);
 	int getSpaceIndex(POINTCR colRow) const;
+	void fillMouseMap(const wchar_t* pFilename);
+	POINTCR crAdjustment(POINTXY offsetIntoSpace, SHORT row) const;
 
 public:
 	cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int numSpacesTall);
@@ -77,7 +88,7 @@ public:
 	//Two methods do get pSpace
 	cHEX_SPACE* GetpSpaceCR(POINTCR colRow) const;
 	cHEX_SPACE* GetpSpaceXY(SHORT x, SHORT y) const;
-	POINTCR GetCRFromXY(SHORT x, SHORT y) const;
+	POINT GetCRFromXY(SHORT x, SHORT y) const;
 
 	void OnPaint(HDC hdc) const;
 

@@ -4,6 +4,7 @@
 
 #include "cHexMapWnd.h"
 #include "DebugRoutines.h"
+#include "cImageBuffer.h"
 
 const wchar_t* kHexWndClassName = L"HexWndClass";
 
@@ -15,7 +16,9 @@ static cHEX_MAP_WND* sg_pHexMapWnd = NULL;
 
 int cHEX_MAP_WND::m_nFieldSpacesWide = 0;
 int cHEX_MAP_WND::m_nFieldSpacesTall = 0;
-int cHEX_SPACE::m_nSpaceSize = 0;
+//int cHEX_SPACE::m_nSpaceSize = 0;
+SHORT cHEX_SPACE::m_spaceHalfWide = 0;
+SHORT cHEX_SPACE::m_spaceQuarterTall = 0;
 
 //colors of square
 COLORREF cHEX_SPACE::m_crStandardColor = RGB(220, 220, 220);
@@ -28,8 +31,7 @@ const int childID = 1958;
 /****************************************************/
 cHEX_SPACE::cHEX_SPACE(void)
 {
-	m_bHilighted = FALSE;
-	m_nSpaceSize = 12;
+	m_bHilighted = FALSE;	
 
 	return;
 }
@@ -38,6 +40,16 @@ cHEX_SPACE::cHEX_SPACE(void)
 cHEX_SPACE::~cHEX_SPACE(void)
 {
 
+}
+
+/****************************************************/
+void cHEX_SPACE::SetSpaceSize(int SpaceSize)
+{
+	//set the space dimension (1/2 wide, 1/4 tall)
+	m_spaceHalfWide = (SHORT)(SpaceSize * SQRT3);
+	m_spaceQuarterTall = (SHORT)SpaceSize;
+
+	return;
 }
 
 #if 0
@@ -66,23 +78,23 @@ void cHEX_SPACE::PaintSpace(HDC hdc) const
 	SelectObject(hdc, hBrush);
 	SelectObject(hdc, hPen);
 
-	int sq3sz = (int)(SQRT3 * m_nSpaceSize);
-	int sq3sz2 = sq3sz * 2;
+	//int sq3sz = (int)(SQRT3 * m_nSpaceSize);
+	//int sq3sz2 = sq3sz * 2;
 
 	//polygon version
 	POINT apts[6];
 	apts[0].x = m_ptsLocation.x;
-	apts[0].y = m_ptsLocation.y + m_nSpaceSize;
-	apts[1].x = m_ptsLocation.x + sq3sz;
+	apts[0].y = m_ptsLocation.y + m_spaceQuarterTall; // m_nSpaceSize;
+	apts[1].x = m_ptsLocation.x + m_spaceHalfWide; //sq3sz;
 	apts[1].y = m_ptsLocation.y;
-	apts[2].x = m_ptsLocation.x + sq3sz2;
-	apts[2].y = m_ptsLocation.y + m_nSpaceSize;
-	apts[3].x = m_ptsLocation.x + sq3sz2;
-	apts[3].y = m_ptsLocation.y + (3 * m_nSpaceSize);
-	apts[4].x = m_ptsLocation.x + sq3sz;
-	apts[4].y = m_ptsLocation.y + (4 * m_nSpaceSize);
+	apts[2].x = m_ptsLocation.x + m_spaceHalfWide * 2; // sq3sz2;
+	apts[2].y = m_ptsLocation.y + m_spaceQuarterTall; // m_nSpaceSize;
+	apts[3].x = m_ptsLocation.x + m_spaceHalfWide * 2; // sq3sz2;
+	apts[3].y = m_ptsLocation.y + m_spaceQuarterTall * 3; //  (3 * m_nSpaceSize);
+	apts[4].x = m_ptsLocation.x + m_spaceHalfWide; // sq3sz;
+	apts[4].y = m_ptsLocation.y + m_spaceQuarterTall * 4; // (4 * m_nSpaceSize);
 	apts[5].x = m_ptsLocation.x;
-	apts[5].y = m_ptsLocation.y + (3 * m_nSpaceSize);
+	apts[5].y = m_ptsLocation.y + m_spaceQuarterTall * 3; // (3 * m_nSpaceSize);
 
 	Polygon(hdc, apts, 6);
 
@@ -137,13 +149,15 @@ void cHEX_SPACE::PaintSpace(HDC hdc) const
 POINTXY cHEX_SPACE::GetCenterCoord(void) const
 {
 	POINTXY retValue;
-	float x = m_ptsLocation.x + (SQRT3 * m_nSpaceSize);
-	float y = m_ptsLocation.y + ( 2.0f * m_nSpaceSize);
-	retValue.x = (SHORT)x;
-	retValue.y = (SHORT)y;
+	SHORT x = m_ptsLocation.x + m_spaceHalfWide; // (SQRT3 * m_nSpaceSize);
+	SHORT y = m_ptsLocation.y + m_spaceQuarterTall * 2; // (2.0f * m_nSpaceSize);
+	retValue.x = x;
+	retValue.y = y;
 	
 	return (POINTXY)retValue;
 }
+
+const wchar_t* KMOUSEMAP_FILENAME = L"../Textures/MouseMap.bmp";
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -155,6 +169,8 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int n
 
 	m_nFieldSpacesWide = numSpacesWide;
 	m_nFieldSpacesTall = numSpacesTall;
+
+	fillMouseMap(KMOUSEMAP_FILENAME);
 
 	m_hBGBrush = CreateSolidBrush(RGB(190, 180, 100));
 
@@ -176,6 +192,12 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int n
 		for (int i2 = 0; i2 < numSpacesWide; i2++) {
 			m_apSpaces[currentSpace] = new cHEX_SPACE();
 			m_apSpaces[currentSpace]->SetLocation(currentCorner);
+
+			//debug: print all corners
+			//wchar_t string[128];
+			//swprintf_s(string, 128, L"HexCorner %d: %d x %d\n", currentSpace, currentCorner.x, currentCorner.y);
+			//debugsay(string);
+
 			currentSpace++;
 			//next hex in row ->
 			currentCorner.x += (sq3sz * 2);			
@@ -199,6 +221,8 @@ cHEX_MAP_WND::cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int n
 cHEX_MAP_WND::~cHEX_MAP_WND(void)
 {
 	DeleteObject(m_hBGBrush);
+
+	CLEAN_DELETE(m_pMouseMapIndices);
 
 	int numSpaces = m_nFieldSpacesWide * m_nFieldSpacesTall;
 
@@ -241,7 +265,36 @@ void cHEX_MAP_WND::fillWC(void)
 	return;
 }
 
+//Convert .bmp image file to array of indices (3 values)
+/*******************************************************************/
+void cHEX_MAP_WND::fillMouseMap(const wchar_t* pFilename)
+{
+	//Filename includes path
+
+	//debug
+	//wchar_t curDir[128];
+	//GetCurrentDirectory(128, curDir);
+
+	cIMAGE_BUFFER8* pImageBuffer;
+	pImageBuffer = new cIMAGE_BUFFER8(pFilename);
+	unsigned char* pBits = (unsigned char*)pImageBuffer->GetpBits();
+	WORD tall = (WORD)pImageBuffer->GetRowsTall();
+	WORD wide = (WORD)pImageBuffer->GetPaddedWide();
+	int size = tall * wide;
+
+	m_ptxyMouseMapSize.x = wide;
+	m_ptxyMouseMapSize.y = tall;
+	m_pMouseMapIndices = new unsigned char[size];
+	for (int i = 0; i < size; i++)
+		m_pMouseMapIndices[i] = pBits[i];
+
+	CLEAN_DELETE(pImageBuffer);
+
+	return;
+}
+
 //Helper funciton
+//Converts column/row into the absolute index into the array of spaces
 /******************************************************************************/
 int cHEX_MAP_WND::getSpaceIndex(POINTCR colRow) const
 {
@@ -255,29 +308,125 @@ int cHEX_MAP_WND::getSpaceIndex(POINTCR colRow) const
 	return spaceIndex;
 }
 
-/*****************************************************************************/
-POINTCR cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
-{	
-	SHORT col;
-	SHORT row;	
+//addjust the calculated CR by mousemap
+/******************************************************************************/
+POINTCR cHEX_MAP_WND::crAdjustment(POINTXY xy, SHORT row) const
+{
+	POINTCR retPoint = POINTCR{ 0, 0 };	
 
-	int size = m_apSpaces[0]->GetSpaceSize();	
+	SHORT spaceWidth = m_apSpaces[0]->GetSpaceHalfWide() * 2;
+	SHORT spaceHeight = m_apSpaces[0]->GetSpaceQuarterTall() * 3;
+
+	float scaleX = m_ptxyMouseMapSize.x / (float)spaceWidth;
+	float scaleY = m_ptxyMouseMapSize.y / (float)spaceHeight;
+	
+	SHORT effectiveX = (SHORT)(xy.x * scaleX);
+	SHORT effectiveY = (SHORT)(xy.y * scaleY);
+
+	//translate xy into absolute index	
+	int index = (effectiveY * m_ptxyMouseMapSize.x) + effectiveX;
+
+	//get indices[index]
+	unsigned char adjustment = m_pMouseMapIndices[index];
+	switch (adjustment) {
+
+	//Black: No Adjust
+	case 4:
+		break;
+
+	//Red
+	case 1:
+		//odd row
+		if (row % 2) {
+			retPoint.y = -1;		
+		}
+		//even row
+		else {							
+			retPoint.y = -1;
+			retPoint.x = -1;
+		}
+		break;
+
+	//Blue
+	case 0:
+		//odd rows
+		if (row % 2) {
+			retPoint.y = -1;
+			retPoint.x = 1;
+		}
+		//even row
+		else
+			retPoint.y = -1;
+
+		break;
+
+	default:
+		MYASSERT(0);
+		break;
+	}
+
+	//Need to accomodate final row!!
+
+	return retPoint;
+}
+
+//Converts screen x/y into hex column/row
+/*****************************************************************************/
+POINT cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
+{			
+	int col;
+	int row;	
+	POINTXY offsetIntoSpace; //mouse map coord
+	POINT retPoint = POINT{ 0, 0 };
+
+	//int size = m_apSpaces[0]->GetSpaceSize();	
+	SHORT quarterSize = m_apSpaces[0]->GetSpaceQuarterTall();
+	SHORT halfSize = m_apSpaces[0]->GetSpaceHalfWide();
 
 	//Get the Row (up/down) first since it will affect the column (<->)
 	//deduct top margin
-	row = y - m_sMargin.y;
-	row = row / (size * 3);
+	y = y - m_sMargin.y;
+	row = y / (quarterSize * 3);	
+
+	//coord is in empty space at bottom
+	if (row >= m_nFieldSpacesTall) {
+		retPoint.y = -1;
+		return retPoint;
+	}
+	
+	offsetIntoSpace.y = y % (quarterSize * 3);
 
 	//now can do column <>
 	//Deduct margin from mouse x
-	col = x - m_sMargin.x;
+    x = x - m_sMargin.x;
 		
 	//if odd row, deduct 1/2 hex width from mouxe x
-	if (row % 2)
-		col -= (SHORT)(size * SQRT3);			
-	col = (SHORT)(col / (size * SQRT3_2));
-	
-	return POINTCR{ col, row };
+	if (row % 2) {
+		x -= (SHORT)(halfSize);
+		//x is in margin area left side
+		if (x < 0) {
+			retPoint.x = -1;
+			return retPoint;
+		}
+
+	}
+	col = (SHORT)(x / (halfSize * 2));
+
+	if(col >= m_nFieldSpacesWide) {
+		retPoint.x = -1;
+		return retPoint;
+	}
+
+	offsetIntoSpace.x = x % (SHORT)(halfSize * 2);
+
+	POINTCR crAdjust = crAdjustment(offsetIntoSpace, row);
+	col += crAdjust.x;
+	row += crAdjust.y;
+
+	retPoint.x = col;
+	retPoint.y = row;
+
+	return retPoint;
 }
 
 /*****************************************************************************/
@@ -293,9 +442,9 @@ cHEX_SPACE* cHEX_MAP_WND::GetpSpaceXY(SHORT x, SHORT y) const
 {
 	cHEX_SPACE* pHexReturn = NULL;
 
-	POINTS cr = GetCRFromXY(x, y);
-	pHexReturn = GetpSpaceCR(cr);
-
+	POINT cr = GetCRFromXY(x, y);
+	if(!(cr.x < 0 || cr.y < 0))
+		pHexReturn = GetpSpaceCR(POINTCR{ (SHORT)cr.x, (SHORT)cr.y });
 	return pHexReturn;
 }
 
@@ -312,17 +461,19 @@ POINTXY cHEX_MAP_WND::DesiredClient(void) const
 	POINTXY retPt{ 0, 0 };
 
 	MYASSERT(m_apSpaces != NULL);
-	int spaceSize = m_apSpaces[0]->GetSpaceSize();
-	MYASSERT(spaceSize != NULL);
+	//int spaceSize = m_apSpaces[0]->GetSpaceSize();
+	//MYASSERT(spaceSize != NULL);
+	SHORT quarterSize = m_apSpaces[0]->GetSpaceQuarterTall();
+	SHORT halfSize = m_apSpaces[0]->GetSpaceHalfWide();
 
 	MYASSERT(m_nFieldSpacesWide != 0);
 
 	POINTXY workingPt = (POINTXY)m_apSpaces[m_nFieldSpacesWide - 1]->GetLocation();
-	workingPt.x += (SHORT) (SQRT3 * spaceSize * 3);
+	workingPt.x += halfSize * 3; //(SHORT) (SQRT3 * spaceSize * 3);
 	retPt.x = workingPt.x + m_sMargin.x;
 
 	workingPt = m_apSpaces[(m_nFieldSpacesTall  -1) * m_nFieldSpacesWide]->GetLocation();
-	workingPt.y += spaceSize * 4;
+	workingPt.y += quarterSize * 4; //spaceSize * 4;
 	retPt.y = workingPt.y + m_sMargin.y;
 
 	return retPt;

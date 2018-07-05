@@ -199,10 +199,13 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
    //-- Move single entity to space clicked into --+
 
    //get space clicked on
-   POINTCR cr = m_pHexMapWnd->GetCRFromXY(x, y);
+   POINT nCR = m_pHexMapWnd->GetCRFromXY(x, y);
+
+   if ((nCR.x < 0 || nCR.y < 0))
+	   return;
 
    //Set entinty location to this hex.
-   m_pEntity->SetLocation(cr);
+   m_pEntity->SetLocation(POINTCR{ (SHORT)nCR.x, (SHORT)nCR.y });
 
    //Redraw map and entity
    InvalidateRect(m_hParWnd, NULL, FALSE);
