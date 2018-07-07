@@ -6,7 +6,6 @@
 #include "ProjDefs.h"
 #include "cParWnd.h"
 
-
 //Default Point Top Hex
 //------------------------------------------------------+
 class cHEX_SPACE {
@@ -14,9 +13,12 @@ private:
 	BOOL m_bHilighted;
 
 	//UpperLeft Corner in Screen Coords
-	POINTS m_sLocation;
+	POINTXY m_ptsLocation;
 
-	static int m_nSpaceSize;  //in pixels
+	//size of hex elements
+	static SHORT m_spaceHalfWide;
+	static SHORT m_spaceQuarterTall;
+	//static int m_nSpaceSize;  //in pixels
 
 	//colors of space
 	static COLORREF m_crStandardColor;
@@ -29,22 +31,24 @@ public:
 	cHEX_SPACE(void);
 	~cHEX_SPACE(void);
 
-	//Set the corner of the square in client pixels
-	void SetLocation(POINTS pLocation);
-	POINTS GetLocation(void) { return m_sLocation; }
+	//Following 3 are in hexMap screen pixels
+	void SetLocation(POINTXY ptsLocation) { m_ptsLocation = ptsLocation; }
+	POINTXY GetLocation(void) const { return m_ptsLocation; }
+	POINTXY GetCenterCoord(void) const;
 
-	void SetSpaceSize(int size) { m_nSpaceSize = size; }
-	static int GetSpaceSize(void) { return m_nSpaceSize; }
+	void SetSpaceSize(int size); // { m_nSpaceSize = size; }	
 
-	void SetHilighted(BOOL b) { m_bHilighted = b; }
+	//static int GetSpaceSize(void) { return m_nSpaceSize; }
+	SHORT GetSpaceHalfWide(void) { return m_spaceHalfWide; }
+	SHORT GetSpaceQuarterTall(void) { return m_spaceQuarterTall; }
 
-	POINTS GetCenterCoord(void);
+	void SetHilighted(BOOL b) { m_bHilighted = b; }	
 
 	//Each square contains an ACTOR_INFO structure
 	//void SetActorInfo(ACTOR_INFO ai) { m_stActorInfo = ai; }
 	//ACTOR_INFO GetActorInfo(void) { return m_stActorInfo; }
 
-	void PaintSpace(HDC hdc);
+	void PaintSpace(HDC hdc) const;
 };
 
 //-----------------------------------------------------+
@@ -54,8 +58,11 @@ private:
 	static int m_nFieldSpacesWide;
 	static int m_nFieldSpacesTall;
 
+	POINTXY m_ptxyMouseMapSize;
+	unsigned char* m_pMouseMapIndices;
+
 	//margin around spaces
-	POINTS m_sMargin{2, 2};
+	POINTXY m_sMargin{2, 2};
 
 	cHEX_SPACE** m_apSpaces;
 
@@ -64,15 +71,26 @@ private:
 
 	//-- private methods ----+
 	void fillWC(void);
+	int getSpaceIndex(POINTCR colRow) const;
+	void fillMouseMap(const wchar_t* pFilename);
+	POINTCR crAdjustment(POINTXY offsetIntoSpace, SHORT row) const;
 
 public:
 	cHEX_MAP_WND(HWND hParent, int spaceSize, int numSpacesWide, int numSpacesTall);
 	~cHEX_MAP_WND(void);
 
 	//Tell someone what size client we'd like
-	POINTS DesiredClient(void);
+	POINTXY DesiredClient(void) const;
 
-	void OnPaint(HDC hdc);
+	//Return center pixel coords of hex space at col/row on map
+	POINTXY GetCenterCoord(POINTS colRow) const;
+
+	//Two methods do get pSpace
+	cHEX_SPACE* GetpSpaceCR(POINTCR colRow) const;
+	cHEX_SPACE* GetpSpaceXY(SHORT x, SHORT y) const;
+	POINT GetCRFromXY(SHORT x, SHORT y) const;
+
+	void OnPaint(HDC hdc) const;
 
 	LRESULT EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lParam);
 };

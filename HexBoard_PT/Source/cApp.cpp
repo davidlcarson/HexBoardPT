@@ -221,6 +221,8 @@ LRESULT cAPP::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
       lr = TRUE;
       }
 
+	//This should only be called by the system. No calls from in our App to paint
+	//..the parent window
    case WM_PAINT:
       {
       //debugsay(L"At WM_PAINT in cAPP\n")
@@ -241,7 +243,17 @@ LRESULT cAPP::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
       break;
 
 
-   //--- Use Message --------------+
+   //--- User Message --------------+
+   case UM_MAPWND_LBUTTON_DOWN:
+   {
+	   //Send Pixel Coordinates!!!
+	   SHORT x = GET_X_LPARAM(lParam);
+	   SHORT y = GET_Y_LPARAM(lParam);
+
+	   m_pGameMaster->OnMapWndLButtonDown(x, y);
+	   
+   }
+	   break;
 
 
     default:
@@ -252,6 +264,7 @@ LRESULT cAPP::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
 }
 
 //ParWnd process. Put here for access to sg_pApp.
+//(Which also gives it access to cGAME_MASTER)
 /************************************************************************************/
 LRESULT CALLBACK ParWndProc(HWND hWnd, UINT uMessage,
 	WPARAM wParam, LPARAM lParam)

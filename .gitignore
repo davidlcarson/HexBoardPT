@@ -8,6 +8,14 @@
 *.sln.docstates
 *.tlog
 
+#mine
+HexBoard_PT\Textures\*
+HexBoard_PT\Temp\*
+GenLib\Lib\*
+GenLib\Temp\*
+*.bmp
+
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -261,4 +269,8 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+<<<<<<< HEAD
 HexBoard_PT/Textures/mousemap.bmp
+=======
+*.lib
+>>>>>>> AddArmy

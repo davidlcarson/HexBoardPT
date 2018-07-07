@@ -5,6 +5,7 @@
 #pragma once
 #include "ProjDefs.h"
 #include "cHexMapWnd.h"
+#include "cEntity.h"
 
 //#include "cArenaMapWnd.h"
 //#include "cStatusWnd.h"
@@ -28,6 +29,8 @@ private:
    HWND m_hParWnd;  //our parent wnd
    cHEX_MAP_WND* m_pHexMapWnd;
 
+   cENTITY* m_pEntity;
+
    //cSTATUS_WND* m_pStatusWnd;
 
    //int m_nMaxTurns;
@@ -47,14 +50,14 @@ private:
    //--- private methods ----_
    //void paintArmies(HDC hdc);
    void positionMap(void);
-   //POINTS calcClient();
+   //POINTXY calcClient();
 
 public:
    cGAME_MASTER(HWND hParWnd);
    ~cGAME_MASTER(void);
 
    //void CreateBoardWindow(HWND hParent);
-   //BOOL OnArenaLButtonDown(SHORT x, SHORT y);
+   void OnMapWndLButtonDown(SHORT x, SHORT y);
    //BOOL OnArenaMouseMove(SHORT x, SHORT y);
    //BOOL OnArenaLButtonUp(SHORT x, SHORT y);
 
