@@ -6,10 +6,12 @@
 const int kDefHitPoints = 5;
 const int kDefRange = 10;
 /*********************************************************/
-cACTOR::cACTOR(const wchar_t* pActorName, eARMY army, eACTOR_TYPE type)
+cACTOR::cACTOR(const wchar_t* pActorName, eARMY army, int index, eACTOR_TYPE type)
 {
+
    m_army = army;  //army we belong to
    m_pActorName = pActorName;
+   m_index = index;
 
    //Actor type. Later, we will use this to distinguis
    //..derived classes when getting pointer to array of actor

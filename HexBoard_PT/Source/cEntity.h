@@ -6,6 +6,7 @@
 
 #include "cHexMapWnd.h"
 
+#if 0
 //--------------------------------------------------------------+
 class cENTITY {
 private:
@@ -14,7 +15,7 @@ private:
 	//We don't own
 	//cHEX_SPACE* m_pCurrentSpace;
 
-	//eENTITY_TYPE m_eEntityType;
+	eENTITY_TYPE m_eEntityType;
 
 	//BOOL m_bActive;
 	//BOOL m_bVisible;
@@ -39,3 +40,4 @@ public:
 
 	void Paint(HDC hdc, POINTXY hexCenter) const;
 };
+#endif

@@ -29,21 +29,17 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_pHexMapWnd->SetBlockMove(TRUE);
    m_pHexMapWnd->SetBlockReSize(TRUE);
 
-
-   //Create the 1 Entity
-   m_pEntity = new cENTITY();
-   //Set its location (col, row)
-   m_pEntity->SetLocation(POINTCR{ 4, 2 });
-
 #if 0
    m_pSelectedLocation = NULL;
 
    for (int i = 0; i < kNUM_ARMIES; i++) {
       m_apArmies[i] = NULL;
    }
+#endif
 
    m_currentGameMode = eInitializing;
 
+#if 0
    m_nMaxTurns = kMAX_TURNS;
    m_nCurTurn = 0;
    m_nNumArmies = 0;
@@ -62,19 +58,38 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
 
    //put status window to the right of arena window
    SetWindowPos(m_pStatusWnd->GethWnd(), NULL, winRect.right, winRect.top, 0, 0, SWP_NOSIZE);
+
+   m_pStatusWnd->Show(); 
+   m_pStatusWnd->SetBlockResize(TRUE);
+   m_pStatusWnd->SetBlockMove(TRUE);
+   
 #endif
+   //Create the 1 Entity
+   //m_pEntity = new cENTITY();
+   //Set its location (col, row)
+   //m_pEntity->SetLocation(POINTCR{ 4, 2 });
 
-   //m_pHexMapWnd->Show();
-  // m_pHexMapWnd->SetBlockReSize(TRUE);
-  // m_pHexMapWnd->SetBlockMove(TRUE);
+   //init
+   m_nNumArmies=0;
+   m_currentArmy=eArmy1; //should be in range 0-3
 
-   //m_pStatusWnd->Show(); 
-   //m_pStatusWnd->SetBlockResize(TRUE);
-   //m_pStatusWnd->SetBlockMove(TRUE);
-#if 0
-   //Init the Army
-   m_apArmies[0] = new cARMY(L"Northern Army");
+   //Create an army
+   cARMY* pArmy = new cARMY(L"Northern Army");
+   //Create actor(s) to populate army
+   //index 0
+   cACTOR* pActor = new cACTOR(L"Actor 1", m_currentArmy, 0, eHUMAN);
+
+   //arbitrary location for now
+   POINTCR location = POINTCR{ 2, 3 };
+   setActorLocation(pActor, location);
+
+   //Hand off ownership of pointers
+   pArmy->AddActor(pActor);
+
+   m_apArmies[m_currentArmy] = pArmy;
    m_nNumArmies++;
+
+#if 0
    m_apArmies[1] = new cARMY(L"Southern Army");
    m_nNumArmies++;
 
@@ -111,14 +126,12 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    
    //done
 
-   //Army 1 up first
-   m_currentArmy = eArmy1;
-
    MYASSERT(m_pStatusWnd != NULL);
    m_pStatusWnd->SetArmyName(m_apArmies[m_currentArmy]->GetpName());
+#endif
 
    m_currentGameMode = eSelection;
-#endif
+
    //Invalidate Parent will set chain of paints that
    //..will paint the new MapWnd
    InvalidateRect(m_hParWnd, NULL, FALSE);
@@ -128,18 +141,39 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
 /****************************************/
 cGAME_MASTER::~cGAME_MASTER(void)
 {
-#if 0
-   for (int i = 0; i < kNUM_ARMIES; i++) {
+
+   for (int i = 0; i < m_nNumArmies; i++) {
       CLEAN_DELETE(m_apArmies[i]);
    }
    
-   CLEAN_DELETE(m_pStatusWnd);
-#endif
+   //CLEAN_DELETE(m_pStatusWnd);
 
-   CLEAN_DELETE(m_pEntity);
+
+   //CLEAN_DELETE(m_pEntity);
    CLEAN_DELETE(m_pHexMapWnd);
 
    return;
+}
+
+/************************************************************************/
+void cGAME_MASTER::setActorLocation(cACTOR* pActor, POINTCR location)
+{
+	//get pHex
+	cHEX_SPACE* pHexSpace;
+	pHexSpace = m_pHexMapWnd->GetpSpaceCR(location);
+
+	//set pHex in actor
+	pActor->SetpLocation(pHexSpace);
+
+	//get actor info
+	ACTOR_INFO* pActorInfo = pHexSpace->GetpActorInfo();
+	pActorInfo->eArmy = pActor->GetActorArmy();
+	//set hex ai.army : actor army
+	pActorInfo->index = pActor->GetIndex();
+	//set hex ai.index: actor index
+	//pHexSpace->SetActorInfo(ActorInfo);
+
+	return;
 }
 
 #if 0 //doesn't really work becasue of floats. Let Map tell us what size it wants
@@ -192,64 +226,56 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
    X and Y are in field client coordinates.
    We have to convert to square number.
    Then get pSquare and info. Go from there
-
-   Return (bool) Do we need repaint?
    */   
 
-   //-- Move single entity to space clicked into --+
+   //get col/row of space clicked on
+   POINTCR nCR = m_pHexMapWnd->GetCRFromXY(x, y);
 
-   //get space clicked on
-   POINT nCR = m_pHexMapWnd->GetCRFromXY(x, y);
-
-   if ((nCR.x < 0 || nCR.y < 0))
+   if ((nCR.col < 0 || nCR.row < 0))
 	   return;
 
-   //Set entinty location to this hex.
-   m_pEntity->SetLocation(POINTCR{ (SHORT)nCR.x, (SHORT)nCR.y });
+   //Get ptr to Space that was 'clicked'
+   cHEX_SPACE * pSpace = m_pHexMapWnd->GetpSpaceCR(nCR);
+   if (pSpace == NULL)
+	   return;
 
-   //Redraw map and entity
-   InvalidateRect(m_hParWnd, NULL, FALSE);
-
-#if 0
    switch (m_currentGameMode) {
+
    case eSelection:
    {
-      //Get ptr to Square that was 'clicked'
-      cFIELD_SQUARE * pSquare = m_pArenaWnd->GetpFieldSquare(x, y);
-      //No non-square places on map
-      MYASSERT(pSquare != NULL);
-
       //Get the actor info
-      ACTOR_INFO AI = pSquare->GetActorInfo();
+	  ACTOR_INFO* pAI = pSpace->GetpActorInfo();
 
-      //If not our player there, we're done
-      if (AI.eArmy != m_currentArmy)
+      //If not current army there, we're done
+      if (pAI->eArmy != m_currentArmy)
          break;
 
       //Get the actor and find out about him
-      cACTOR* pSelectedActor = m_apArmies[AI.eArmy]->GetpActor(AI.index);
+      cACTOR* pSelectedActor = m_apArmies[pAI->eArmy]->GetpActor(pAI->index);
 
-      if (pSelectedActor->GetHasMoved() == TRUE) 
-         break;      
+      //if (pSelectedActor->GetHasMoved() == TRUE) 
+      //   break;      
 
-      m_pSelectedLocation = pSquare;
-      pSquare->SetHilighted(TRUE);
-      bRetValue = TRUE;
+	  //Store pointer to space/actor that was selected for move
+      m_pSelectedLocation = pSpace;
+      pSpace->SetHilighted(TRUE);
+      //bRetValue = TRUE;
 
       //Tell Status Window we've selected an Actor
-      m_pStatusWnd->SetCurrentActor(pSelectedActor);
+      //m_pStatusWnd->SetCurrentActor(pSelectedActor);
 
       m_currentGameMode = eMoving;
 
-      //Parent will invalidted rect, which will call
-      //..our paint routine
-      
+	  //Redraw map and entity
+	  InvalidateRect(m_hParWnd, NULL, FALSE);
+
       }
       break;
 
    //LButtonDown
    case eMoving:
       {
+	   m_pPotentialLocation = pSpace;
       //Last Potential is our destination.
 
       MYASSERT(m_pSelectedLocation != NULL);
@@ -257,24 +283,25 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
       MYASSERT(m_pPotentialLocation != NULL);
 
       //1. Get AI from current location
-      ACTOR_INFO curAI;
-      curAI = m_pSelectedLocation->GetActorInfo();    
+      ACTOR_INFO* pCurAI;
+      pCurAI = m_pSelectedLocation->GetpActorInfo();    
 
       //2. Use it to get pointer to actor on the square
-      cACTOR* pMovingActor = m_apArmies[curAI.eArmy]->GetpActor(curAI.index);
+      cACTOR* pMovingActor = m_apArmies[pCurAI->eArmy]->GetpActor(pCurAI->index);
 
       //3. write the AI to the dest squre
-      m_pPotentialLocation->SetActorInfo(curAI);
+      m_pPotentialLocation->SetActorInfo(pCurAI);
 
       //4. clear the ai and write empty ai to current square
-      curAI.eArmy = eNone;
-      curAI.index = 0;
-      m_pSelectedLocation->SetActorInfo(curAI);
+      //curAI.eArmy = eNone;
+      //curAI.index = 0;
+      //m_pSelectedLocation->SetActorInfo(curAI);
+	  pCurAI->Clear();
       m_pSelectedLocation->SetHilighted(FALSE);
 
       //5. AI done. Now store dest square as location in actor
       pMovingActor->SetpLocation(m_pPotentialLocation);
-      pMovingActor->SetMoved(TRUE);
+      //pMovingActor->SetMoved(TRUE);
 
       //Set for next Actor movement
       m_pSelectedLocation->SetHilighted(FALSE);
@@ -282,11 +309,16 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
       m_pPotentialLocation->SetHilighted(FALSE);
       m_pPotentialLocation = NULL;
 
-      m_pStatusWnd->SetCurrentActor(NULL);
+      //m_pStatusWnd->SetCurrentActor(NULL);
 
-      m_currentGameMode = eSelection;
+	  //Set entinty location to this hex.
+	  //m_pEntity->SetLocation(POINTCR{ (SHORT)nCR.col, (SHORT)nCR.row });
+	  setActorLocation(pMovingActor, nCR);
 
-      bRetValue = TRUE;
+	  m_currentGameMode = eSelection;
+
+	  //Redraw map and entity
+	  InvalidateRect(m_hParWnd, NULL, FALSE);
 
       }
       break;
@@ -295,7 +327,6 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
       break;
 
    }// end 'switch current mode'
-#endif //0
 
    return;
 }
@@ -543,16 +574,10 @@ void cGAME_MASTER::OnPaint(void)
    //Paint the board
    m_pHexMapWnd->OnPaint(hdc);
 
-   //paint the entity
-
-   if (m_pEntity) {
-	   POINTXY hexCenter; //in pixels
-	   hexCenter = m_pHexMapWnd->GetCenterCoord(m_pEntity->GetLocation());
-
-	   m_pEntity->Paint(hdc, hexCenter);
-   }
-
    //paintArmies(hdc);
+   for (int i = 0; i < m_nNumArmies; i++) {
+	   m_apArmies[i]->PaintArmy(hdc);
+   }
 
    ReleaseDC(m_pHexMapWnd->GethWnd(), hdc);
 

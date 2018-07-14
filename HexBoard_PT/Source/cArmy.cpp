@@ -21,7 +21,7 @@ cARMY::cARMY(const wchar_t* pName)
 /*********************************************************************/
 cARMY::~cARMY(void)
 {
-   for (int i = 0; i < kMAX_ARMY_SIZE; i++)
+   for (int i = 0; i < m_numActors; i++)
       CLEAN_DELETE(m_apActors[i]);
 
    return;
@@ -43,8 +43,12 @@ int cARMY::AddActor(cACTOR* pActor)
 void cARMY::PaintArmy(HDC hdc)
 {
    //Correct pen color already selected in hdc
+   cACTOR* pActor;
+
    for (int i = 0; i < m_numActors; i++){
-      m_apActors[i]->Paint(hdc);
+	   pActor = m_apActors[i];
+
+	   pActor->Paint(hdc);
    }
 
    return;

@@ -7,15 +7,15 @@
 
 #include "Globdefs.h"
 
-#define POINTCR POINTS
-#define POINTXY POINTS
+typedef struct tPOINTCR{
+	SHORT col;
+	SHORT row;
+}POINTCR;
 
-enum GAME_MODE {
-   eInitializing,
-   eSelection,
-   eMoving,
-   eCombat
-};
+typedef struct tPOINTXY {
+	SHORT x;
+	SHORT y;
+}POINTXY;
 
 enum eARMY {
    eNone = -1,
@@ -41,13 +41,15 @@ enum eENTITY_TYPE {
 
 //actor info structure -
 //..one in each gameboard space 
+//This is so cSPACE doesn't have to know about pActor
 struct ACTOR_INFO {
    //army number (0-3)
    eARMY eArmy;
    //index into army's array of actors
    SHORT index;
 
-   ACTOR_INFO(void) { eArmy = eNone; index = 0; }
+   ACTOR_INFO(void) { Clear(); }
+   void Clear(void) { eArmy = eNone; index = 0; }
 };
 
 //Note: Have verified there are no WM_USER messages

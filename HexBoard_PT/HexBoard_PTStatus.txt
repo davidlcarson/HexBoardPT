@@ -1,24 +1,55 @@
 //Starter App Status
 
-180627: Draws child window with hexes and a client size that fits.
+[x] Every Space needs an ActoryInfo that holds data about actor that occupies.
+	//Every space is constructed with an ActorInfo structure w/ default settings
+
+[x] Add one army to the game master class
+	[x] Init and clear
+
+[x] Remove all traces of cENTITY
+
+[x] Set Actor location. Paint it.
+/*
+---- Actor knowledge, Hexspace knowledge.
+Actor knows pointer to hex it occupies
+	(frequently changes)
+	(set my GameMaster when it assigns actor location)
+Actor knows its index into array of Actors 
+	(might periodically change ?)
+	(set when it's added to army by Game Master. Currently doesn't change)
+Actor knows its Army
+	(set when it's added to army by Game Master)
+	(never changes)
+
+Hexspace knows corner coord
+	(never changes)
+	(set when gamemap is created)
+Hexspace knows army that occupies it
+	(will change with occupant)
+	(set when gamemaster assigns actor location)
+Hexspace knows index into army its actor is
+	(set when gamemaster assigns actor location)
+	(will change with occupant)
+*/
+
+[x] Enumerate eMODES in GameMaster.
+	//Currently 'Selection' and 'Moving'
+
+[x] click a hex. If valid, return ActorInfo
+[x] Selected Hex w/ actor hilites
+[x] Change current mode to 'move'
+[x] Next VALID click, move selected actor there.
+
+[ ] Show valid moves via hiliting w/ mousemove
 
 
-[ ] Draw an entity at some set location (Row/col)
-	[x] Generic entity: Just draws filled rectangle
-
-	[x] Create entity and set its location
-				
-	[x] Call paint on entity (hdc, pixel center)
-		[ ] row/col to pixel center handeld by GameMaster: call to hex map?
-		
 
 
 
-Now: Add army
-	Start with simple entity
-		? Entity needs pointer to hexspace it occupies... Who provides?  Where?
-			(Think ahead to armies and arrays of entities)
-			> Look at cARMY class and see how i did it (VIA ACTOR_INFO?)
+[ ] Test move lenght as mouse moves around map. Hilite legal
+	[ ] repaint one hex only?
+		[ ] Means hex holds info on occupying entity 
+
 
 
 			cAPP

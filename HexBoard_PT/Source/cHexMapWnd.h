@@ -25,7 +25,8 @@ private:
 	static COLORREF m_crHiliteColor;
 	static COLORREF m_crPenColor;
 
-	//ACTOR_INFO m_stActorInfo;
+	//NOT A POINTER
+	ACTOR_INFO m_stActorInfo;
 
 public:
 	cHEX_SPACE(void);
@@ -45,8 +46,8 @@ public:
 	void SetHilighted(BOOL b) { m_bHilighted = b; }	
 
 	//Each square contains an ACTOR_INFO structure
-	//void SetActorInfo(ACTOR_INFO ai) { m_stActorInfo = ai; }
-	//ACTOR_INFO GetActorInfo(void) { return m_stActorInfo; }
+	void SetActorInfo(ACTOR_INFO* pAI) { m_stActorInfo = *pAI; }
+	ACTOR_INFO* GetpActorInfo(void) { return &m_stActorInfo; }
 
 	void PaintSpace(HDC hdc) const;
 };
@@ -83,12 +84,12 @@ public:
 	POINTXY DesiredClient(void) const;
 
 	//Return center pixel coords of hex space at col/row on map
-	POINTXY GetCenterCoord(POINTS colRow) const;
+	POINTXY GetCenterCoord(POINTCR colRow) const;
 
 	//Two methods do get pSpace
 	cHEX_SPACE* GetpSpaceCR(POINTCR colRow) const;
 	cHEX_SPACE* GetpSpaceXY(SHORT x, SHORT y) const;
-	POINT GetCRFromXY(SHORT x, SHORT y) const;
+	POINTCR GetCRFromXY(SHORT x, SHORT y) const;
 
 	void OnPaint(HDC hdc) const;
 

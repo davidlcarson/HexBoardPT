@@ -1,5 +1,5 @@
 //cEntity.cpp
-
+#if 0
 #include "cEntity.h"
 
 COLORREF cENTITY::m_PenColor = RGB(0, 0, 0);
@@ -51,3 +51,4 @@ void cENTITY::Paint(HDC hdc, POINTXY hexCenter) const
 	
 	return;
 }
+#endif

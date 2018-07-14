@@ -299,11 +299,11 @@ void cHEX_MAP_WND::fillMouseMap(const wchar_t* pFilename)
 int cHEX_MAP_WND::getSpaceIndex(POINTCR colRow) const
 {
 	int spaceIndex;
-	MYASSERT(colRow.x <= m_nFieldSpacesWide);
-	MYASSERT(colRow.y <= m_nFieldSpacesTall);
+	MYASSERT(colRow.col <= m_nFieldSpacesWide);
+	MYASSERT(colRow.row <= m_nFieldSpacesTall);
 
 	//Get space in array from col/Row
-	spaceIndex = (colRow.y * m_nFieldSpacesWide) + colRow.x;
+	spaceIndex = (colRow.row * m_nFieldSpacesWide) + colRow.col;
 
 	return spaceIndex;
 }
@@ -338,12 +338,12 @@ POINTCR cHEX_MAP_WND::crAdjustment(POINTXY xy, SHORT row) const
 	case 1:
 		//odd row
 		if (row % 2) {
-			retPoint.y = -1;		
+			retPoint.row = -1;		
 		}
 		//even row
 		else {							
-			retPoint.y = -1;
-			retPoint.x = -1;
+			retPoint.row = -1;
+			retPoint.col = -1;
 		}
 		break;
 
@@ -351,12 +351,12 @@ POINTCR cHEX_MAP_WND::crAdjustment(POINTXY xy, SHORT row) const
 	case 0:
 		//odd rows
 		if (row % 2) {
-			retPoint.y = -1;
-			retPoint.x = 1;
+			retPoint.row = -1;
+			retPoint.col = 1;
 		}
 		//even row
 		else
-			retPoint.y = -1;
+			retPoint.row = -1;
 
 		break;
 
@@ -372,12 +372,12 @@ POINTCR cHEX_MAP_WND::crAdjustment(POINTXY xy, SHORT row) const
 
 //Converts screen x/y into hex column/row
 /*****************************************************************************/
-POINT cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
+POINTCR cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
 {			
 	int col;
 	int row;	
 	POINTXY offsetIntoSpace; //mouse map coord
-	POINT retPoint = POINT{ 0, 0 };
+	POINTCR retPoint = POINTCR{ 0, 0 };
 
 	//int size = m_apSpaces[0]->GetSpaceSize();	
 	SHORT quarterSize = m_apSpaces[0]->GetSpaceQuarterTall();
@@ -390,7 +390,7 @@ POINT cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
 
 	//coord is in empty space at bottom
 	if (row >= m_nFieldSpacesTall) {
-		retPoint.y = -1;
+		retPoint.row = -1;
 		return retPoint;
 	}
 	
@@ -405,7 +405,7 @@ POINT cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
 		x -= (SHORT)(halfSize);
 		//x is in margin area left side
 		if (x < 0) {
-			retPoint.x = -1;
+			retPoint.col = -1;
 			return retPoint;
 		}
 
@@ -413,18 +413,18 @@ POINT cHEX_MAP_WND::GetCRFromXY(SHORT x, SHORT y) const
 	col = (SHORT)(x / (halfSize * 2));
 
 	if(col >= m_nFieldSpacesWide) {
-		retPoint.x = -1;
+		retPoint.col = -1;
 		return retPoint;
 	}
 
 	offsetIntoSpace.x = x % (SHORT)(halfSize * 2);
 
 	POINTCR crAdjust = crAdjustment(offsetIntoSpace, row);
-	col += crAdjust.x;
-	row += crAdjust.y;
+	col += crAdjust.col;
+	row += crAdjust.row;
 
-	retPoint.x = col;
-	retPoint.y = row;
+	retPoint.col = col;
+	retPoint.row = row;
 
 	return retPoint;
 }
@@ -442,14 +442,15 @@ cHEX_SPACE* cHEX_MAP_WND::GetpSpaceXY(SHORT x, SHORT y) const
 {
 	cHEX_SPACE* pHexReturn = NULL;
 
-	POINT cr = GetCRFromXY(x, y);
-	if(!(cr.x < 0 || cr.y < 0))
-		pHexReturn = GetpSpaceCR(POINTCR{ (SHORT)cr.x, (SHORT)cr.y });
+	POINTCR cr = GetCRFromXY(x, y);
+	if(!(cr.col < 0 || cr.row < 0))
+		pHexReturn = GetpSpaceCR(POINTCR{ (SHORT)cr.col, (SHORT)cr.row });
+
 	return pHexReturn;
 }
 
 /*****************************************************************************/
-POINTXY cHEX_MAP_WND::GetCenterCoord(POINTS colRow) const
+POINTXY cHEX_MAP_WND::GetCenterCoord(POINTCR colRow) const
 {
 	
 	return GetpSpaceCR(colRow)->GetCenterCoord();
@@ -504,7 +505,6 @@ LRESULT cHEX_MAP_WND::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPAR
 	LRESULT lr = FALSE;
 
 	switch (uMessage) {
-
 
 	//painting is handled by GameMaster calling OnPaint directly
 	case WM_PAINT:

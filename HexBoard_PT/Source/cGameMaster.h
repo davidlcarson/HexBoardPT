@@ -9,10 +9,17 @@
 
 //#include "cArenaMapWnd.h"
 //#include "cStatusWnd.h"
-//#include "cArmy.h"
+#include "cArmy.h"
 
 
-//static const int kNUM_ARMIES = 4;
+static const int kMAX_ARMIES = 4;
+
+enum eGAME_MODE {
+	eInitializing,
+	eSelection,
+	eMoving,
+	eCombat
+};
 
 #if 0
 static const COLORREF kARMY_COLORS[4] = {
@@ -29,27 +36,29 @@ private:
    HWND m_hParWnd;  //our parent wnd
    cHEX_MAP_WND* m_pHexMapWnd;
 
-   cENTITY* m_pEntity;
+   //cENTITY* m_pEntity;
 
    //cSTATUS_WND* m_pStatusWnd;
 
    //int m_nMaxTurns;
    //int m_nCurTurn;
 
-   //cARMY* m_apArmies[kNUM_ARMIES];
-   //eARMY m_currentArmy; //should be in range 0-3
-   //int m_nNumArmies;
+   cARMY* m_apArmies[kMAX_ARMIES];
+   eARMY m_currentArmy; //should be in range 0-3
+   int m_nNumArmies;
 
    //Square holding Actor selected for moving
-   //cFIELD_SQUARE* m_pSelectedLocation;
+   cHEX_SPACE* m_pSelectedLocation;
    //Current valid square as potential destination
-   //cFIELD_SQUARE* m_pPotentialLocation;
+   cHEX_SPACE* m_pPotentialLocation;
 
-   //GAME_MODE m_currentGameMode;
+   eGAME_MODE m_currentGameMode;
 
    //--- private methods ----_
    //void paintArmies(HDC hdc);
    void positionMap(void);
+   void setActorLocation(cACTOR* pActor, POINTCR location);
+
    //POINTXY calcClient();
 
 public:
