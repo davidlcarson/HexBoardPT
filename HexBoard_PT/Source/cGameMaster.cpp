@@ -1,6 +1,7 @@
 //cGameMaster.cpp
 
 #include "cGameMaster.h"
+#include <math.h> //fabs
 //#include "MyResource.h" //dialog box
 
 //const eHEX_TYPE kHEX_TYPE = eHexPointSide;
@@ -45,13 +46,13 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_nNumArmies = 0;
 #endif
    
-#if 0
+   //The Status Window....
    m_pStatusWnd = new cSTATUS_WND(hParentWnd, 1934);
    m_pStatusWnd->RegisterChild();
    m_pStatusWnd->CreateChild(WS_THICKFRAME, 256, 300);
 
    RECT winRect;
-   GetWindowRect(m_pArenaWnd->GethWnd(), &winRect);
+   GetWindowRect(m_pHexMapWnd->GethWnd(), &winRect);
 
    ScreenToClient(m_hParWnd, (POINT*)&winRect.left);
    ScreenToClient(m_hParWnd, (POINT*)&winRect.right);
@@ -62,13 +63,7 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    m_pStatusWnd->Show(); 
    m_pStatusWnd->SetBlockResize(TRUE);
    m_pStatusWnd->SetBlockMove(TRUE);
-   
-#endif
-   //Create the 1 Entity
-   //m_pEntity = new cENTITY();
-   //Set its location (col, row)
-   //m_pEntity->SetLocation(POINTCR{ 4, 2 });
-
+  
    //init
    m_nNumArmies=0;
    m_currentArmy=eArmy1; //should be in range 0-3
@@ -146,7 +141,7 @@ cGAME_MASTER::~cGAME_MASTER(void)
       CLEAN_DELETE(m_apArmies[i]);
    }
    
-   //CLEAN_DELETE(m_pStatusWnd);
+   CLEAN_DELETE(m_pStatusWnd);
 
 
    //CLEAN_DELETE(m_pEntity);
@@ -227,7 +222,7 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
 	  m_MovingOriginData.pActor = pSelectedActor;	  
       m_MovingOriginData.pSpace = pSpace;
 	  m_MovingOriginData.pActorInfo = pAI;
-	  m_MovingOriginData.crLocation = m_pHexMapWnd->GetCRFromXY(pSpace->GetCenterCoord());
+	  m_MovingOriginData.xyCenter = pSpace->GetCenterCoord();
 
       pSpace->SetHilighted(TRUE);
 
@@ -271,6 +266,8 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
      
 	  m_currentGameMode = eSelection;
 
+	  m_pStatusWnd->SetOutputString(L"");
+
 	  //Redraw map and entity
 	  InvalidateRect(m_hParWnd, NULL, FALSE);
 
@@ -285,6 +282,8 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
    return;
 }
 
+//output for status wnd (temp debug)
+static 	  wchar_t string[128];
 
 /***********************************************************************/
 void cGAME_MASTER::OnMapWndMouseMove(SHORT x, SHORT y)
@@ -324,16 +323,19 @@ void cGAME_MASTER::OnMapWndMouseMove(SHORT x, SHORT y)
 	  //Get distance from origin space
 
       //1. Get CR from XY
-	  POINTCR destCR = m_pHexMapWnd->GetCRFromXY(x, y);
+	  //POINTCR destCR = m_pHexMapWnd->GetCRFromXY(x, y);
+	  POINTXY destCenter = pSpace->GetCenterCoord();
 
       //2. Calc distance from current occupied square
       //Get rc of m_pSelectedLocation
-	  unsigned short delta = abs(destCR.col - m_MovingOriginData.crLocation.col) + abs(destCR.row - m_MovingOriginData.crLocation.row);
+	  double deltaCol = fabs(destCenter.x - m_MovingOriginData.xyCenter.x);
+	  double deltaRow = fabs(destCenter.y - m_MovingOriginData.xyCenter.y);
+	  double distance = sqrt((deltaCol * deltaCol) + (deltaRow * deltaRow));
 
-      //Get Actor Range
-      int allowedDistance = m_MovingOriginData.pActor->GetRange();
+      //Get Actor Range. Using 2.05 to slightly increase range.
+	  double allowedDistance = m_MovingOriginData.pActor->GetRange() * pSpace->GetSpaceHalfWide() * 2.05;
 
-      if (delta > allowedDistance)
+	  if(distance > allowedDistance)
          break;
 
 	  //-- This is a valid potential destination

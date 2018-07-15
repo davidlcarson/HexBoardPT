@@ -36,7 +36,7 @@
     <ClCompile Include="Source\cActor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\cEntity.cpp">
+    <ClCompile Include="Source\cStatusWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -65,7 +65,7 @@
     <ClInclude Include="Source\cActor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\cEntity.h">
+    <ClInclude Include="Source\cStatusWnd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

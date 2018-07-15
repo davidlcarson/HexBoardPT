@@ -132,20 +132,20 @@
     <ClCompile Include="Source\cActor.cpp" />
     <ClCompile Include="Source\cApp.cpp" />
     <ClCompile Include="Source\cArmy.cpp" />
-    <ClCompile Include="Source\cEntity.cpp" />
     <ClCompile Include="Source\cGameMaster.cpp" />
     <ClCompile Include="Source\cGreetWnd.cpp" />
     <ClCompile Include="Source\cHexMapWnd.cpp" />
+    <ClCompile Include="Source\cStatusWnd.cpp" />
     <ClCompile Include="Source\StarterApp_Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\cActor.h" />
     <ClInclude Include="Source\cApp.h" />
     <ClInclude Include="Source\cArmy.h" />
-    <ClInclude Include="Source\cEntity.h" />
     <ClInclude Include="Source\cGameMaster.h" />
     <ClInclude Include="Source\cGreetWnd.h" />
     <ClInclude Include="Source\cHexMapWnd.h" />
+    <ClInclude Include="Source\cStatusWnd.h" />
     <ClInclude Include="Source\MyResource.h" />
     <ClInclude Include="Source\ProjDefs.h" />
   </ItemGroup>

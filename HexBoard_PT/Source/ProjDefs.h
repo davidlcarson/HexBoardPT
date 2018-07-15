@@ -18,6 +18,9 @@ typedef struct tPOINTCR{
 typedef struct tPOINTXY {
 	SHORT x;
 	SHORT y;
+	void Clear(void) { x = y = 0; }
+	void Set(SHORT X, SHORT Y) { x = X; y = Y; }
+	tPOINTXY(SHORT X = 0, SHORT Y = 0) { Set(X, Y); }
 }POINTXY;
 
 enum eARMY {

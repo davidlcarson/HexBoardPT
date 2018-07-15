@@ -5,20 +5,17 @@
 #pragma once
 #include "ProjDefs.h"
 #include "cHexMapWnd.h"
-#include "cEntity.h"
-
-//#include "cArenaMapWnd.h"
-//#include "cStatusWnd.h"
+#include "cStatusWnd.h"
 #include "cArmy.h"
 
 typedef struct tSPACE_DATA {
 	cHEX_SPACE* pSpace;
 	cACTOR* pActor;
-	POINTCR crLocation;
+	POINTXY xyCenter;
 	ACTOR_INFO* pActorInfo;
 
 	void Clear(void) {
-		pSpace = NULL;  pActor = NULL;  pActorInfo = NULL;  crLocation.Clear();
+		pSpace = NULL;  pActor = NULL;  pActorInfo = NULL;  xyCenter.Clear();
 	}
 	tSPACE_DATA(void) { Clear(); }
 }SPACE_DATA;
@@ -47,7 +44,7 @@ private:
    HWND m_hParWnd;  //our parent wnd
    cHEX_MAP_WND* m_pHexMapWnd;
 
-   //cSTATUS_WND* m_pStatusWnd;
+   cSTATUS_WND* m_pStatusWnd;
 
    //int m_nMaxTurns;
    //int m_nCurTurn;
@@ -56,14 +53,9 @@ private:
    eARMY m_currentArmy; //should be in range 0-3
    int m_nNumArmies;
 
-   //Square holding Actor selected for moving
-   //cHEX_SPACE* m_pSelectedSpace;
-   //POINTCR m_pcrSelectedCR;
+   //structures for moving data
    SPACE_DATA m_MovingOriginData;
-   SPACE_DATA m_MovingDestData;
-
-   //Current valid square as potential destination
-   //cHEX_SPACE* m_pPotentialLocation;
+   SPACE_DATA m_MovingDestData;   
 
    eGAME_MODE m_currentGameMode;
 
