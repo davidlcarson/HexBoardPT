@@ -83,18 +83,18 @@ void cHEX_SPACE::PaintSpace(HDC hdc) const
 
 	//polygon version
 	POINT apts[6];
-	apts[0].x = m_ptsLocation.x;
-	apts[0].y = m_ptsLocation.y + m_spaceQuarterTall; // m_nSpaceSize;
-	apts[1].x = m_ptsLocation.x + m_spaceHalfWide; //sq3sz;
-	apts[1].y = m_ptsLocation.y;
-	apts[2].x = m_ptsLocation.x + m_spaceHalfWide * 2; // sq3sz2;
-	apts[2].y = m_ptsLocation.y + m_spaceQuarterTall; // m_nSpaceSize;
-	apts[3].x = m_ptsLocation.x + m_spaceHalfWide * 2; // sq3sz2;
-	apts[3].y = m_ptsLocation.y + m_spaceQuarterTall * 3; //  (3 * m_nSpaceSize);
-	apts[4].x = m_ptsLocation.x + m_spaceHalfWide; // sq3sz;
-	apts[4].y = m_ptsLocation.y + m_spaceQuarterTall * 4; // (4 * m_nSpaceSize);
-	apts[5].x = m_ptsLocation.x;
-	apts[5].y = m_ptsLocation.y + m_spaceQuarterTall * 3; // (3 * m_nSpaceSize);
+	apts[0].x = m_pxyLocation.x;
+	apts[0].y = m_pxyLocation.y + m_spaceQuarterTall; // m_nSpaceSize;
+	apts[1].x = m_pxyLocation.x + m_spaceHalfWide; //sq3sz;
+	apts[1].y = m_pxyLocation.y;
+	apts[2].x = m_pxyLocation.x + m_spaceHalfWide * 2; // sq3sz2;
+	apts[2].y = m_pxyLocation.y + m_spaceQuarterTall; // m_nSpaceSize;
+	apts[3].x = m_pxyLocation.x + m_spaceHalfWide * 2; // sq3sz2;
+	apts[3].y = m_pxyLocation.y + m_spaceQuarterTall * 3; //  (3 * m_nSpaceSize);
+	apts[4].x = m_pxyLocation.x + m_spaceHalfWide; // sq3sz;
+	apts[4].y = m_pxyLocation.y + m_spaceQuarterTall * 4; // (4 * m_nSpaceSize);
+	apts[5].x = m_pxyLocation.x;
+	apts[5].y = m_pxyLocation.y + m_spaceQuarterTall * 3; // (3 * m_nSpaceSize);
 
 	Polygon(hdc, apts, 6);
 
@@ -149,8 +149,8 @@ void cHEX_SPACE::PaintSpace(HDC hdc) const
 POINTXY cHEX_SPACE::GetCenterCoord(void) const
 {
 	POINTXY retValue;
-	SHORT x = m_ptsLocation.x + m_spaceHalfWide; // (SQRT3 * m_nSpaceSize);
-	SHORT y = m_ptsLocation.y + m_spaceQuarterTall * 2; // (2.0f * m_nSpaceSize);
+	SHORT x = m_pxyLocation.x + m_spaceHalfWide; // (SQRT3 * m_nSpaceSize);
+	SHORT y = m_pxyLocation.y + m_spaceQuarterTall * 2; // (2.0f * m_nSpaceSize);
 	retValue.x = x;
 	retValue.y = y;
 	
@@ -526,14 +526,8 @@ LRESULT cHEX_MAP_WND::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPAR
 		break;
 
 	case WM_MOUSEMOVE:
-	{
-		SHORT x;
-		SHORT y;
-		x = GET_X_LPARAM(lParam);
-		y = GET_Y_LPARAM(lParam);
 
 		SendMessage(GetParent(hWnd), UM_MAPWND_MOUSEMOVE, wParam, lParam);
-	}
 	break;
 
 	default:

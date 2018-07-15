@@ -13,7 +13,7 @@ private:
 	BOOL m_bHilighted;
 
 	//UpperLeft Corner in Screen Coords
-	POINTXY m_ptsLocation;
+	POINTXY m_pxyLocation;
 
 	//size of hex elements
 	static SHORT m_spaceHalfWide;
@@ -33,8 +33,8 @@ public:
 	~cHEX_SPACE(void);
 
 	//Following 3 are in hexMap screen pixels
-	void SetLocation(POINTXY ptsLocation) { m_ptsLocation = ptsLocation; }
-	POINTXY GetLocation(void) const { return m_ptsLocation; }
+	void SetLocation(POINTXY ptsLocation) { m_pxyLocation = ptsLocation; }
+	POINTXY GetLocation(void) const { return m_pxyLocation; }
 	POINTXY GetCenterCoord(void) const;
 
 	void SetSpaceSize(int size); // { m_nSpaceSize = size; }	
@@ -89,6 +89,7 @@ public:
 	//Two methods do get pSpace
 	cHEX_SPACE* GetpSpaceCR(POINTCR colRow) const;
 	cHEX_SPACE* GetpSpaceXY(SHORT x, SHORT y) const;
+	POINTCR GetCRFromXY(POINTXY pxy) { return GetCRFromXY(pxy.x, pxy.y); }
 	POINTCR GetCRFromXY(SHORT x, SHORT y) const;
 
 	void OnPaint(HDC hdc) const;

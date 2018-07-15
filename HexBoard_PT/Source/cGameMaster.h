@@ -48,7 +48,9 @@ private:
    int m_nNumArmies;
 
    //Square holding Actor selected for moving
-   cHEX_SPACE* m_pSelectedLocation;
+   cHEX_SPACE* m_pSelectedSpace;
+   POINTCR m_pcrSelectedCR;
+
    //Current valid square as potential destination
    cHEX_SPACE* m_pPotentialLocation;
 
@@ -65,10 +67,8 @@ public:
    cGAME_MASTER(HWND hParWnd);
    ~cGAME_MASTER(void);
 
-   //void CreateBoardWindow(HWND hParent);
    void OnMapWndLButtonDown(SHORT x, SHORT y);
-   //BOOL OnArenaMouseMove(SHORT x, SHORT y);
-   //BOOL OnArenaLButtonUp(SHORT x, SHORT y);
+   void OnMapWndMouseMove(SHORT x, SHORT y);
 
    //void EndMovement(void);  //end the movement phase
 

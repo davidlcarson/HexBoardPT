@@ -257,7 +257,9 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
       //   break;      
 
 	  //Store pointer to space/actor that was selected for move
-      m_pSelectedLocation = pSpace;
+      m_pSelectedSpace = pSpace;
+	  m_pcrSelectedCR = m_pHexMapWnd->GetCRFromXY(pSpace->GetCenterCoord());
+
       pSpace->SetHilighted(TRUE);
       //bRetValue = TRUE;
 
@@ -278,13 +280,13 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
 	   m_pPotentialLocation = pSpace;
       //Last Potential is our destination.
 
-      MYASSERT(m_pSelectedLocation != NULL);
+      MYASSERT(m_pSelectedSpace != NULL);
       //This is still a problem
       MYASSERT(m_pPotentialLocation != NULL);
 
       //1. Get AI from current location
       ACTOR_INFO* pCurAI;
-      pCurAI = m_pSelectedLocation->GetpActorInfo();    
+      pCurAI = m_pSelectedSpace->GetpActorInfo();    
 
       //2. Use it to get pointer to actor on the square
       cACTOR* pMovingActor = m_apArmies[pCurAI->eArmy]->GetpActor(pCurAI->index);
@@ -297,15 +299,15 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
       //curAI.index = 0;
       //m_pSelectedLocation->SetActorInfo(curAI);
 	  pCurAI->Clear();
-      m_pSelectedLocation->SetHilighted(FALSE);
+      m_pSelectedSpace->SetHilighted(FALSE);
 
       //5. AI done. Now store dest square as location in actor
       pMovingActor->SetpLocation(m_pPotentialLocation);
       //pMovingActor->SetMoved(TRUE);
 
       //Set for next Actor movement
-      m_pSelectedLocation->SetHilighted(FALSE);
-      m_pSelectedLocation = NULL;
+      m_pSelectedSpace->SetHilighted(FALSE);
+      m_pSelectedSpace = NULL;
       m_pPotentialLocation->SetHilighted(FALSE);
       m_pPotentialLocation = NULL;
 
@@ -315,7 +317,7 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
 	  //m_pEntity->SetLocation(POINTCR{ (SHORT)nCR.col, (SHORT)nCR.row });
 	  setActorLocation(pMovingActor, nCR);
 
-	  m_currentGameMode = eSelection;
+	  m_currentGameMode = eMoving;
 
 	  //Redraw map and entity
 	  InvalidateRect(m_hParWnd, NULL, FALSE);
@@ -332,52 +334,51 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
 }
 
 
-#if 0
 /***********************************************************************/
-BOOL cGAME_MASTER::OnArenaMouseMove(SHORT x, SHORT y)
+void cGAME_MASTER::OnMapWndMouseMove(SHORT x, SHORT y)
 {
    /*
    X and Y are in field client coordinates.
-   We have to convert to square number.
-   Then get pSquare and info. Go from there
+   We have to convert to col/row
 
    Return (bool) Do we need repaint?
    */
-
-   //Indicat 'Need Repaint"
-   BOOL bRetValue = FALSE;
 
    switch (m_currentGameMode) {
    case eMoving:
       {
       //track square when we were here last. If same,
       //..then bail to save time and redraws
-      static cFIELD_SQUARE* pPrevMMSquare = NULL;
+      static cHEX_SPACE* pPrevMMSquare = NULL;
 
-      //1. Get valid square relating to current X/y
+      //1. Get CR from XY
+	  POINTCR destCR = m_pHexMapWnd->GetCRFromXY(x, y);
+
       //Get ptr to Square that is moused over
-      cFIELD_SQUARE * pSquare = m_pArenaWnd->GetpFieldSquare(x, y);
-      if (pSquare == m_pSelectedLocation)
+      cHEX_SPACE * pSpace = m_pHexMapWnd->GetpSpaceXY(x, y);
+      if (pSpace == m_pSelectedSpace)
          break;
 
       //Often, we're still in square from last MM. Bail
-      if (pSquare == pPrevMMSquare)
+      if (pSpace == pPrevMMSquare)
          break;
 
       //If square comes back null, bail
-      if (pSquare == NULL)
+      if (pSpace == NULL)
          break;
       
-      //to spped things up next time
-      pPrevMMSquare = pSquare;
+      //to speed things up next time
+      pPrevMMSquare = pSpace;
 
       //if square occupied, bail
-      ACTOR_INFO AI = pSquare->GetActorInfo();
-      if (AI.eArmy != eNone)
+      ACTOR_INFO* pAI = pSpace->GetpActorInfo();
+      if (pAI->eArmy != eNone)
          break;
 
       //2. Calc distance from current occupied square
-      //Get Center of m_pSelectedLocation
+      //Get rc of m_pSelectedLocation
+	  unsigned short delta = abs(destCR.col - m_pcrSelectedCR.col) + abs(destCR.row - m_pcrSelectedCR.row);
+#if 0
       POINTXY pt1 = m_pSelectedLocation->GetCenterCoord();
       //Get Center of potentialSquare
       POINTXY pt2 = pSquare->GetCenterCoord();
@@ -388,28 +389,29 @@ BOOL cGAME_MASTER::OnArenaMouseMove(SHORT x, SHORT y)
       d1 = d1 * d1;
       d2 = d2 * d2;
       double MouseDistance = sqrt(d1 + d2);
-
-      AI = m_pSelectedLocation->GetActorInfo();
+#endif
+      pAI = m_pSelectedSpace->GetpActorInfo();
 
       //get p to actor in selectedlocation
-      cACTOR* pActor = m_apArmies[AI.eArmy]->GetpActor(AI.index);
+      cACTOR* pActor = m_apArmies[pAI->eArmy]->GetpActor(pAI->index);
       MYASSERT(pActor != NULL);
 
       //if distance > range then bail
       int allowedDistance = pActor->GetRange();
-      allowedDistance *= m_pArenaWnd->GetSquareSize();
+      //allowedDistance *= m_pArenaWnd->GetSquareSize();
 
-      if (MouseDistance > (double)allowedDistance)
+      if (delta > allowedDistance)
          break;
 
       //-New valid potential squrae
       //3 Set as new valid & Hilite. Unhilite prev valid
       if (m_pPotentialLocation != NULL)
          m_pPotentialLocation->SetHilighted(FALSE);
-      m_pPotentialLocation = pSquare;
+      m_pPotentialLocation = pSpace;
       m_pPotentialLocation->SetHilighted(TRUE);
-     
-      bRetValue = TRUE;
+
+	  //Redraw map and entity
+	  InvalidateRect(m_hParWnd, NULL, FALSE);
 
       }
       break;
@@ -419,9 +421,8 @@ BOOL cGAME_MASTER::OnArenaMouseMove(SHORT x, SHORT y)
 
    }// end 'switch current mode'
 
-   return bRetValue;
+   return;
 }
-#endif
 
 #if 0
 /***************************************************************/

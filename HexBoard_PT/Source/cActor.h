@@ -38,7 +38,7 @@ public:
    int GetIndex(void) const { return m_index; }
    //const wchar_t* GetpActorName(void) { return m_pActorName; }
    //int GetHitPoints(void) { return m_nHitPoints; }
-   //int GetRange(void) { return m_nRange; }
+   int GetRange(void) const { return m_nRange; } //in hexes
    //eACTOR_TYPE GetActorType(void) { return m_actorType; }
 
    void Paint(HDC hdc) ;

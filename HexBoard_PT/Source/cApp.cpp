@@ -254,8 +254,14 @@ LRESULT cAPP::EventHandler(HWND hWnd, UINT uMessage, WPARAM wParam, LPARAM lPara
 	   
    }
 	   break;
+   case UM_MAPWND_MOUSEMOVE:
+   {
+	   SHORT x = GET_X_LPARAM(lParam);
+	   SHORT y = GET_Y_LPARAM(lParam);
 
-
+	   m_pGameMaster->OnMapWndMouseMove(x, y);
+   }
+	   break;
     default:
        lr = m_pParWnd->EventHandler(hWnd, uMessage, wParam, lParam);      
    }
