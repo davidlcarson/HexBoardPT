@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HexBoard_PT", "HexBoard_PT\HexBoard_PT.vcxproj", "{786296BB-8671-400C-BF14-9C5BA4D4024C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6DEF1E41-38FE-45B8-B477-8366C2544D67} = {6DEF1E41-38FE-45B8-B477-8366C2544D67}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GenLib", "GenLib\GenLib.vcxproj", "{6DEF1E41-38FE-45B8-B477-8366C2544D67}"
 EndProject

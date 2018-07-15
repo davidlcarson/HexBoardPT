@@ -80,7 +80,7 @@ cGAME_MASTER::cGAME_MASTER(HWND hParentWnd)
    cACTOR* pActor = new cACTOR(L"Actor 1", m_currentArmy, 0, eHUMAN);
 
    //arbitrary location for now
-   POINTCR location = POINTCR{ 2, 3 };
+   POINTCR location(2, 3);
    setActorLocation(pActor, location);
 
    //Hand off ownership of pointers
@@ -168,41 +168,12 @@ void cGAME_MASTER::setActorLocation(cACTOR* pActor, POINTCR location)
 	//get actor info
 	ACTOR_INFO* pActorInfo = pHexSpace->GetpActorInfo();
 	pActorInfo->eArmy = pActor->GetActorArmy();
-	//set hex ai.army : actor army
 	pActorInfo->index = pActor->GetIndex();
-	//set hex ai.index: actor index
-	//pHexSpace->SetActorInfo(ActorInfo);
 
 	return;
 }
 
-#if 0 //doesn't really work becasue of floats. Let Map tell us what size it wants
-/************************************************************************/
-POINTXT cGAME_MASTER::calcClient(void)
-{	
-	//calc client size for Point Top Hexes
-	POINTXY retPt{ 0, 0 };
-
-	//width
-	float width;
-
-	width = kNUM_SQUARES_WIDE * (kSPACE_SIZE * SQRT3_2);
-	width += kSPACE_SIZE * SQRT3;
-	//width += .5f;
-	retPt.x = (SHORT)width;
-
-	//height
-	float height;
-
-	height = kNUM_SQUARES_TALL * (kSPACE_SIZE * 3);
-	height += kSPACE_SIZE;
-	//height += .5f
-	retPt.y = (SHORT)height;
-
-	return retPt;
-}
-#endif
-
+//Centers map in Parent Window (I think)
 /************************************************************************/
 void cGAME_MASTER::positionMap(void)
 {
@@ -218,15 +189,11 @@ void cGAME_MASTER::positionMap(void)
    return;
 }
 
-//Left Button went down in arena
+//Left Button went down in MapWnd
 /**************************************************/
 void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
 {
-   /*
-   X and Y are in field client coordinates.
-   We have to convert to square number.
-   Then get pSquare and info. Go from there
-   */   
+   //x & y are in client coordinates
 
    //get col/row of space clicked on
    POINTCR nCR = m_pHexMapWnd->GetCRFromXY(x, y);
@@ -250,25 +217,27 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
       if (pAI->eArmy != m_currentArmy)
          break;
 
-      //Get the actor and find out about him
+      //Our army: Get the actor and find out about him
       cACTOR* pSelectedActor = m_apArmies[pAI->eArmy]->GetpActor(pAI->index);
 
       //if (pSelectedActor->GetHasMoved() == TRUE) 
       //   break;      
 
-	  //Store pointer to space/actor that was selected for move
-      m_pSelectedSpace = pSpace;
-	  m_pcrSelectedCR = m_pHexMapWnd->GetCRFromXY(pSpace->GetCenterCoord());
+	  //Fill data for moving space/actor
+	  m_MovingOriginData.pActor = pSelectedActor;	  
+      m_MovingOriginData.pSpace = pSpace;
+	  m_MovingOriginData.pActorInfo = pAI;
+	  m_MovingOriginData.crLocation = m_pHexMapWnd->GetCRFromXY(pSpace->GetCenterCoord());
 
       pSpace->SetHilighted(TRUE);
-      //bRetValue = TRUE;
 
       //Tell Status Window we've selected an Actor
       //m_pStatusWnd->SetCurrentActor(pSelectedActor);
 
       m_currentGameMode = eMoving;
 
-	  //Redraw map and entity
+	  //Redraw map and army
+	  //TODO: Support re-drawing just one space?
 	  InvalidateRect(m_hParWnd, NULL, FALSE);
 
       }
@@ -277,47 +246,30 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
    //LButtonDown
    case eMoving:
       {
-	   m_pPotentialLocation = pSpace;
-      //Last Potential is our destination.
+	   //Mouse clicked during move phase..
+      //Last valid potential is our destination.
 
-      MYASSERT(m_pSelectedSpace != NULL);
-      //This is still a problem
-      MYASSERT(m_pPotentialLocation != NULL);
+      MYASSERT(m_MovingDestData.pSpace != NULL);
 
-      //1. Get AI from current location
-      ACTOR_INFO* pCurAI;
-      pCurAI = m_pSelectedSpace->GetpActorInfo();    
+	  //Move actor to last valid space we moused over
+	  m_MovingOriginData.pActor->SetpLocation(m_MovingDestData.pSpace);
+	  //pMovingActor->SetMoved(TRUE);
 
-      //2. Use it to get pointer to actor on the square
-      cACTOR* pMovingActor = m_apArmies[pCurAI->eArmy]->GetpActor(pCurAI->index);
+	  //Set the AI for the new space...
+	  *m_MovingDestData.pActorInfo = *m_MovingOriginData.pActorInfo;
 
-      //3. write the AI to the dest squre
-      m_pPotentialLocation->SetActorInfo(pCurAI);
+	  //Clear the AI for the origin space
+	  m_MovingOriginData.pActorInfo->Clear();
 
-      //4. clear the ai and write empty ai to current square
-      //curAI.eArmy = eNone;
-      //curAI.index = 0;
-      //m_pSelectedLocation->SetActorInfo(curAI);
-	  pCurAI->Clear();
-      m_pSelectedSpace->SetHilighted(FALSE);
+	  //Clear the hilites
+	  m_MovingOriginData.pSpace->SetHilighted(FALSE);
+	  m_MovingDestData.pSpace->SetHilighted(FALSE);
 
-      //5. AI done. Now store dest square as location in actor
-      pMovingActor->SetpLocation(m_pPotentialLocation);
-      //pMovingActor->SetMoved(TRUE);
-
-      //Set for next Actor movement
-      m_pSelectedSpace->SetHilighted(FALSE);
-      m_pSelectedSpace = NULL;
-      m_pPotentialLocation->SetHilighted(FALSE);
-      m_pPotentialLocation = NULL;
-
-      //m_pStatusWnd->SetCurrentActor(NULL);
-
-	  //Set entinty location to this hex.
-	  //m_pEntity->SetLocation(POINTCR{ (SHORT)nCR.col, (SHORT)nCR.row });
-	  setActorLocation(pMovingActor, nCR);
-
-	  m_currentGameMode = eMoving;
+      //Clear data;
+	  m_MovingOriginData.Clear();
+	  m_MovingDestData.Clear();
+     
+	  m_currentGameMode = eSelection;
 
 	  //Redraw map and entity
 	  InvalidateRect(m_hParWnd, NULL, FALSE);
@@ -337,78 +289,67 @@ void cGAME_MASTER::OnMapWndLButtonDown(SHORT x, SHORT y)
 /***********************************************************************/
 void cGAME_MASTER::OnMapWndMouseMove(SHORT x, SHORT y)
 {
-   /*
-   X and Y are in field client coordinates.
-   We have to convert to col/row
-
-   Return (bool) Do we need repaint?
-   */
+	   //X and Y are in field client coordinates.
 
    switch (m_currentGameMode) {
    case eMoving:
       {
-      //track square when we were here last. If same,
-      //..then bail to save time and redraws
+	  //Get ptr to Square that is moused over
+	  cHEX_SPACE * pSpace = m_pHexMapWnd->GetpSpaceXY(x, y);
+
+	  if (pSpace == NULL)
+		  break;
+
+      //A static HexSpace that holds last space we moused over.
+	  //..If it's this space, then we can bail
       static cHEX_SPACE* pPrevMMSquare = NULL;
+
+	  //If we're still in space from last MM. Bail
+	  if (pSpace == pPrevMMSquare)
+		  break;
+
+	  //Don't allow selection of origin
+	  if (pSpace ==  m_MovingOriginData.pSpace)
+		  break;
+
+	  //Passed first tests...
+
+	  //Get data from AI	  
+	  ACTOR_INFO* pAI = pSpace->GetpActorInfo();
+
+	  //if square occupied, bail
+	  if (pAI->eArmy != eNone)
+		  break;
+
+	  //Get distance from origin space
 
       //1. Get CR from XY
 	  POINTCR destCR = m_pHexMapWnd->GetCRFromXY(x, y);
 
-      //Get ptr to Square that is moused over
-      cHEX_SPACE * pSpace = m_pHexMapWnd->GetpSpaceXY(x, y);
-      if (pSpace == m_pSelectedSpace)
-         break;
-
-      //Often, we're still in square from last MM. Bail
-      if (pSpace == pPrevMMSquare)
-         break;
-
-      //If square comes back null, bail
-      if (pSpace == NULL)
-         break;
-      
-      //to speed things up next time
-      pPrevMMSquare = pSpace;
-
-      //if square occupied, bail
-      ACTOR_INFO* pAI = pSpace->GetpActorInfo();
-      if (pAI->eArmy != eNone)
-         break;
-
       //2. Calc distance from current occupied square
       //Get rc of m_pSelectedLocation
-	  unsigned short delta = abs(destCR.col - m_pcrSelectedCR.col) + abs(destCR.row - m_pcrSelectedCR.row);
-#if 0
-      POINTXY pt1 = m_pSelectedLocation->GetCenterCoord();
-      //Get Center of potentialSquare
-      POINTXY pt2 = pSquare->GetCenterCoord();
-     
-      //Calc distance
-      int d1 = abs(pt1.x - pt2.x);
-      int d2 = abs(pt1.y - pt2.y);
-      d1 = d1 * d1;
-      d2 = d2 * d2;
-      double MouseDistance = sqrt(d1 + d2);
-#endif
-      pAI = m_pSelectedSpace->GetpActorInfo();
+	  unsigned short delta = abs(destCR.col - m_MovingOriginData.crLocation.col) + abs(destCR.row - m_MovingOriginData.crLocation.row);
 
-      //get p to actor in selectedlocation
-      cACTOR* pActor = m_apArmies[pAI->eArmy]->GetpActor(pAI->index);
-      MYASSERT(pActor != NULL);
-
-      //if distance > range then bail
-      int allowedDistance = pActor->GetRange();
-      //allowedDistance *= m_pArenaWnd->GetSquareSize();
+      //Get Actor Range
+      int allowedDistance = m_MovingOriginData.pActor->GetRange();
 
       if (delta > allowedDistance)
          break;
 
+	  //-- This is a valid potential destination
+
       //-New valid potential squrae
-      //3 Set as new valid & Hilite. Unhilite prev valid
-      if (m_pPotentialLocation != NULL)
-         m_pPotentialLocation->SetHilighted(FALSE);
-      m_pPotentialLocation = pSpace;
-      m_pPotentialLocation->SetHilighted(TRUE);
+      //Set as new valid & Hilite. Unhilite prev valid
+      if (m_MovingDestData.pSpace != NULL)
+         m_MovingDestData.pSpace->SetHilighted(FALSE);
+
+	  //Fill the data structure
+      m_MovingDestData.pSpace = pSpace;
+	  m_MovingDestData.pSpace->SetHilighted(TRUE);
+	  m_MovingDestData.pActorInfo = pAI;
+
+	  //to speed things up next time
+	  pPrevMMSquare = pSpace;
 
 	  //Redraw map and entity
 	  InvalidateRect(m_hParWnd, NULL, FALSE);

@@ -36,10 +36,10 @@ public:
 
    eARMY GetActorArmy(void) const { return m_army; }
    int GetIndex(void) const { return m_index; }
-   //const wchar_t* GetpActorName(void) { return m_pActorName; }
-   //int GetHitPoints(void) { return m_nHitPoints; }
+   //const wchar_t* GetpActorName(void) const { return m_pActorName; }
+   //int GetHitPoints(void) const { return m_nHitPoints; }
    int GetRange(void) const { return m_nRange; } //in hexes
-   //eACTOR_TYPE GetActorType(void) { return m_actorType; }
+   //eACTOR_TYPE GetActorType(void) const { return m_actorType; }
 
    void Paint(HDC hdc) ;
 };

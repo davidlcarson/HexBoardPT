@@ -4,7 +4,7 @@
 #include "cActor.h"
 
 const int kDefHitPoints = 5;
-const int kDefRange = 10;
+const int kDefRange = 5;
 /*********************************************************/
 cACTOR::cACTOR(const wchar_t* pActorName, eARMY army, int index, eACTOR_TYPE type)
 {

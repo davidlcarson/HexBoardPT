@@ -11,6 +11,17 @@
 //#include "cStatusWnd.h"
 #include "cArmy.h"
 
+typedef struct tSPACE_DATA {
+	cHEX_SPACE* pSpace;
+	cACTOR* pActor;
+	POINTCR crLocation;
+	ACTOR_INFO* pActorInfo;
+
+	void Clear(void) {
+		pSpace = NULL;  pActor = NULL;  pActorInfo = NULL;  crLocation.Clear();
+	}
+	tSPACE_DATA(void) { Clear(); }
+}SPACE_DATA;
 
 static const int kMAX_ARMIES = 4;
 
@@ -36,8 +47,6 @@ private:
    HWND m_hParWnd;  //our parent wnd
    cHEX_MAP_WND* m_pHexMapWnd;
 
-   //cENTITY* m_pEntity;
-
    //cSTATUS_WND* m_pStatusWnd;
 
    //int m_nMaxTurns;
@@ -48,11 +57,13 @@ private:
    int m_nNumArmies;
 
    //Square holding Actor selected for moving
-   cHEX_SPACE* m_pSelectedSpace;
-   POINTCR m_pcrSelectedCR;
+   //cHEX_SPACE* m_pSelectedSpace;
+   //POINTCR m_pcrSelectedCR;
+   SPACE_DATA m_MovingOriginData;
+   SPACE_DATA m_MovingDestData;
 
    //Current valid square as potential destination
-   cHEX_SPACE* m_pPotentialLocation;
+   //cHEX_SPACE* m_pPotentialLocation;
 
    eGAME_MODE m_currentGameMode;
 

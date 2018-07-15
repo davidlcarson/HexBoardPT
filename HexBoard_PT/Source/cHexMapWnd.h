@@ -37,17 +37,17 @@ public:
 	POINTXY GetLocation(void) const { return m_pxyLocation; }
 	POINTXY GetCenterCoord(void) const;
 
-	void SetSpaceSize(int size); // { m_nSpaceSize = size; }	
+	//Set space element size 
+	void SetSpaceSize(int size); 	
 
-	//static int GetSpaceSize(void) { return m_nSpaceSize; }
-	SHORT GetSpaceHalfWide(void) { return m_spaceHalfWide; }
-	SHORT GetSpaceQuarterTall(void) { return m_spaceQuarterTall; }
+	SHORT GetSpaceHalfWide(void) const { return m_spaceHalfWide; }
+	SHORT GetSpaceQuarterTall(void) const { return m_spaceQuarterTall; }
 
 	void SetHilighted(BOOL b) { m_bHilighted = b; }	
 
 	//Each square contains an ACTOR_INFO structure
 	void SetActorInfo(ACTOR_INFO* pAI) { m_stActorInfo = *pAI; }
-	ACTOR_INFO* GetpActorInfo(void) { return &m_stActorInfo; }
+	ACTOR_INFO* GetpActorInfo(void) { return & m_stActorInfo; }
 
 	void PaintSpace(HDC hdc) const;
 };

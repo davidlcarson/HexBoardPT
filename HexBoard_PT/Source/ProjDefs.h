@@ -10,6 +10,9 @@
 typedef struct tPOINTCR{
 	SHORT col;
 	SHORT row;
+	void Clear(void) { col = row = 0; }
+	void Set(SHORT x, SHORT y) { col = x; row = y; }
+	tPOINTCR(SHORT x = 0, SHORT y = 0) { Set(x, y); }
 }POINTCR;
 
 typedef struct tPOINTXY {
